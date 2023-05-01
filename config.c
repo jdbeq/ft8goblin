@@ -115,9 +115,8 @@ yajl_val load_config(void) {
    return NULL;
 }
 
-// XXX: how do we do this without alloc()ing? :|
 // This function shouldn't be exported
-char **cfg_mkpath(char *path, char **rpath) {
+static char **cfg_mkpath(char *path, char **rpath) {
    if (rpath == NULL) {
       fprintf(stderr, "%s: rpath MUST not be NULL\n", __FUNCTION__);
       return NULL;
