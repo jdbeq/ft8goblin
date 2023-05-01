@@ -18,9 +18,9 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-CFLAGS := -O2 -Iext/ft8_lib
-LDFLAGS := -Lext/ft8_lib $(foreach x,${libs},-l${x}) -lft8 -I./ft8_lib
-subdirs += ext/ft8_lib
+CFLAGS := -O2 -ggdb -Iext/ft8_lib -Wall
+LDFLAGS := -Lft8_lib $(foreach x,${libs},-l${x}) -lft8 -I./ft8_lib
+subdirs += ft8_lib
 
 ###########
 # FT8 TUI #
@@ -72,8 +72,10 @@ ft8decoder_real_objs := $(foreach x,${ft8decoder_objs},obj/${x})
 world: subdirs-world ${bins}
 
 install: subdirs-install
-	install -m 0755 ${bins} ${bin_install_path}/
-
+	@for i in ${bins}; do \
+		install -m 0755 $$i ${bin_install_path}/$$i; \
+	done
+	install -m 0755 ft8capture.py ${bin_install_path}/ft8capture
 .PHONY: clean subdirs-world
 clean:
 	@echo "Cleaning..."

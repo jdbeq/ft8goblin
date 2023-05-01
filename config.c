@@ -13,14 +13,13 @@
 yajl_val cfg = NULL;
 
 yajl_val parse_config(const char *cfgfile) {
-    unsigned char *fileData;
+    FILE *fp = NULL;
+    unsigned char *data = NULL;
     size_t rd;
     char errbuf[1024];
     yajl_val node = NULL;
     struct stat sb;
-    FILE *fp = NULL;
     size_t cfg_len = -1;
-    fileData = NULL;
     errbuf[0] = 0;
 
     if (cfgfile == NULL) {
@@ -35,31 +34,31 @@ yajl_val parse_config(const char *cfgfile) {
 
     // this is gross ;)
     cfg_len = sb.st_size;
-    if ((fileData = malloc(cfg_len)) == NULL) {
+    if ((data = malloc(cfg_len)) == NULL) {
        fprintf(stderr, "parse_config: error allocating memory for config parser, exiting!\n");
        exit(255);
     }
 
     if ((fp = fopen(cfgfile, "r")) == NULL) {
        fprintf(stderr, "parse_config: fopen(%s, \"r\") failed: %d: %s\n", cfgfile, errno, strerror(errno));
-       free(fileData);
+       free(data);
        fclose(fp);
        return NULL;
     }
 
     /* read the entire config file */
-    rd = fread((void *) fileData, 1, cfg_len, fp);
+    rd = fread((void *) data, 1, cfg_len, fp);
     // XXX: this needs improved to allow multiple fread() calls, if needed.. though config really shouldn't ever get that big....
 
     /* file read error handling */
     if (rd == 0 && !feof(fp)) {
        fprintf(stderr, "%s: error encountered on file read\n", __FUNCTION__);
-       free(fileData);
+       free(data);
        fclose(fp);
        return NULL;
     } else if (rd < cfg_len) {
        fprintf(stderr, "%s: config file too big\n", __FUNCTION__);
-       free(fileData);
+       free(data);
        fclose(fp);
        return NULL;
     }
@@ -69,7 +68,7 @@ yajl_val parse_config(const char *cfgfile) {
     fp = NULL;
 
     /* we have the whole config file in memory.  let's parse it ... */
-    node = yajl_tree_parse((const char *) fileData, errbuf, sizeof(errbuf));
+    node = yajl_tree_parse((const char *) data, errbuf, sizeof(errbuf));
 
     /* parse error handling */
     if (node == NULL) {
@@ -82,16 +81,18 @@ yajl_val parse_config(const char *cfgfile) {
 
         fprintf(stderr, "\n");
 
-        free(fileData);
+        free(data);
         return NULL;
     }
 
-    free(fileData);
+    free(data);
     return node;
 }
 
 int free_config(yajl_val node) {
     yajl_tree_free(node);
+
+    return 0;
 }
 
 //
@@ -101,8 +102,10 @@ yajl_val load_config(void) {
    yajl_val rv = NULL;
 
    // Try current directory first
-   if ((rv = parse_config("config.json")) != NULL)
+   if ((rv = parse_config("config.json")) != NULL) {
+      cfg = rv;
       return rv;
+   }
 
    // and then the global directory, if config in pwd wasn't found...
    if (rv == NULL && (rv = parse_config("/etc/ft8md/config.json")) != NULL)
@@ -112,43 +115,87 @@ yajl_val load_config(void) {
    return NULL;
 }
 
-char **cfg_mkpath(const char *path) {
-   char **rpath;
+// XXX: how do we do this without alloc()ing? :|
+// This function shouldn't be exported
+char **cfg_mkpath(char *path, char **rpath) {
+   if (rpath == NULL) {
+      fprintf(stderr, "%s: rpath MUST not be NULL\n", __FUNCTION__);
+      return NULL;
+   }
 
-   // split the path on / character
+   if (path == NULL) {
+      fprintf(stderr, "%s: calling with a NULL path makes no sense!\n", __FUNCTION__);
+      return NULL;
+   }
+
+   // zero out the array
+   memset(rpath, 0, sizeof(rpath));
+
+   char *restrict rp = path;
+   char *p = NULL;
+   int ai = 0;
+
+   if ((p = strtok_r(path, "/.", &rp)) == NULL) {
+      fprintf(stderr, "%s: error parsing path %s\n", __FUNCTION__, path);
+      return NULL;
+   }
+   rpath[ai] = p;
+   ai++;
+
+   while (1) {
+      if ((p = strtok_r(NULL, "/.", &rp)) == NULL) {
+         break;
+      }
+      rpath[ai] = p;
+      ai++;
+   }
+
+   // make sure last item is NULL
+   rpath[ai] = NULL;
    return rpath;
 }
 
 int cfg_get_int(yajl_val cfg, const char *path) {
-    int rv = -1;
+   int rv = -1;
 
-    // rpath should be constructed by calling cfg_mkpath()
-    const char *rpath[] = { "ui", "autoscroll", (const char *) 0 };
-    yajl_val v = yajl_tree_get(cfg, rpath, yajl_t_number);
+   if (path == NULL) {
+      fprintf(stderr, "%s called with path == NULL, bailing!", __FUNCTION__);
+      return rv;
+   }
 
-    if (v) {
-       rv = YAJL_GET_INTEGER(v);
-       fprintf(stderr, "%s: <%s> = %d\n", __FUNCTION__, path, rv);
-    } else {
-       fprintf(stderr, "%s: no such node: %s\n", __FUNCTION__, path[0]);
-    }
+   // rpath should be constructed by calling cfg_mkpath()
+   char *rpath[PATHMAX_JSON];
+   char *cpath = strdup(path);
+   cfg_mkpath(cpath, rpath);
+   yajl_val v = yajl_tree_get(cfg, (const char **)rpath, yajl_t_number);
+   free(cpath);
 
-    return rv;
+   if (v) {
+      rv = YAJL_GET_INTEGER(v);
+//      fprintf(stderr, "%s: <%s> = %d\n", __FUNCTION__, path, rv);
+   } else {
+      fprintf(stderr, "%s: no such node: %s\n", __FUNCTION__, path);
+   }
+
+   return rv;
 }
 
 const char *cfg_get_str(yajl_val cfg, const char *path) {
-    const char *rv = NULL;
+   char *rv = NULL;
 
-    // rpath should be constructed by calling cfg_mkpath()
-    const char *rpath[] = { "ui", "autoscroll", (const char *) 0 };
-    yajl_val v = yajl_tree_get(cfg, rpath, yajl_t_string);
+   // rpath should be constructed by calling cfg_mkpath
+   char *rpath[PATHMAX_JSON];
+   char *cpath = strdup(path);
+   cfg_mkpath(cpath, rpath);
+   yajl_val v = yajl_tree_get(cfg, (const char **)rpath, yajl_t_string);
+   free(cpath);
 
-    if (v) {
-       rv = YAJL_GET_STRING(v);
-       fprintf(stderr, "%s: <%s> = %s\n", __FUNCTION__, path, rv);
-    } else {
-       fprintf(stderr, "%s: no such node: %s\n", __FUNCTION__, path[0]);
-    }
+   if (v) {
+      rv = YAJL_GET_STRING(v);
+//      fprintf(stderr, "%s: <%s> = %s\n", __FUNCTION__, path, rv);
+   } else {
+      fprintf(stderr, "%s: no such node: %s\n", __FUNCTION__, path);
+   }
 
-    return rv;
+   return rv;
 }

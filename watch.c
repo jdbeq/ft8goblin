@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <regex.h>
 #include "config.h"
 #include "watch.h"
 
@@ -59,4 +60,25 @@ watch_item_t *watch_create(watch_type_t watch_type, const char *watch_string, si
 
     // return the item
     return w;
+}
+
+//////////////////////////////////
+// Load a watchlist into memory //
+//////////////////////////////////
+int watchlist_load(const char *path) {
+   FILE *fp = NULL;
+
+   if ((fp = fopen(path, "r")) == NULL) {
+      fprintf(stderr, "%s: Failed opening %s: %d:%s\n", __FUNCTION__, path, errno, strerror(errno));
+      return -errno;
+   }
+
+   while (!feof(fp)) {
+      //
+      break;
+   }
+
+   fclose(fp);
+   fp = NULL;
+   return 0;
 }
