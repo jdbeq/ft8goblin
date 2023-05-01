@@ -1,0 +1,4 @@
+You will need the following packages installed on the host:
+	libyajl-dev
+	gnuradio
+	libuhd

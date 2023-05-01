@@ -1,0 +1,134 @@
+{
+   "version": 1,
+    "device": {
+       "name": "usrp1",
+       "type": "uhd",
+       "devstring": "type=x300,subdev=B:0,RX2"
+   },
+   "ipc": {
+      "udp-port-base": 12000,
+      "udp-packet-size": 1472,
+      "path": "ft8md.pipe",
+      "mode": "0660"
+   },
+   "logging": {
+      "decoder-loglevel": "notice",
+      "decoder-logpath": "ft8decoder-%b.log",
+      "log-crashed-decoders": "true",
+      "ui-loglevel": "error",
+      "ui-logpath": "ft8cli.log"
+   },
+   "site": {
+      "mycall": "N0CALL",
+      "gridsquare": "EM98aA",
+      "elevation": "340M",
+      "city": "Earth",
+      "state": "OH",
+      "country": "USA"
+    },
+
+   "supervise-decoders": "true",
+   "supervise-ft8capture": "true",
+
+   "ft8decoder": {
+      "waterfall-update-main": 0.1,
+      "waterfall-update-band": 0.1
+   },
+
+   "ui": {
+      "color": "true",
+      "autoscroll": "true",
+      "alerts": {
+         "alert-new-country": "true",
+         "alert-new-dxcc": "true",
+         "alert-new-grid": "false",
+         "alert-watch-calls": "popup",
+         "watchfile": "watchlist.txt",
+         "watchfile-inotify": "true",
+         "watchfile-timed-reload": "false"
+      }
+   },
+
+   "bands": [
+      {
+         "device": "usrp1",
+         "name": "ft8-160m",
+         "mode": "ft8",
+         "frequency": 1084000,
+         "port": 12001,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-80m",
+         "mode": "ft8",
+         "frequency": 3573000,
+         "port": 12002,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-60m",
+         "mode": "ft8",
+         "frequency": 5357000,
+         "port": 12003,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-40m",
+         "mode": "ft8",
+         "frequency": 7074000,
+         "port": 12004,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-30m",
+         "mode": "ft8",
+         "frequency": 10133000,
+         "port": 12005,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-20m",
+         "mode": "ft8",
+         "frequency": 14074000,
+         "port": 12006,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-17m",
+         "mode": "ft8",
+         "frequency": 18100000,
+         "port": 12007,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-15m",
+         "mode": "ft8",
+         "frequency": 21074000,
+         "port": 12008,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-12m",
+         "mode": "ft8",
+         "frequency": 24915000,
+         "port": 12009,
+         "width": 3500
+      },
+      {
+         "device": "usrp1",
+         "name": "ft8-10,",
+         "mode": "ft8",
+         "frequency": 28074000,
+         "port": 12010,
+         "width": 3500
+      }
+   ]
+}
