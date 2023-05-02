@@ -1,0 +1,11 @@
+# callsign:
+# call [CALLSIGN] [BAND|*]
+call AA1BB *
+
+# gridsquare:
+# grid [GRIDSQUARE] [BAND|*]
+#	[GRIDSQUARE] can be 4 or 6 digits
+grid EM98 *
+
+# dxcc:
+# dxcc [DXCC] [BAND|*]

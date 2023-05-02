@@ -18,9 +18,9 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-CFLAGS := -O2 -ggdb -Iext/ft8_lib -Wall
-LDFLAGS := -Lft8_lib $(foreach x,${libs},-l${x}) -lft8 -I./ft8_lib
-subdirs += ft8_lib
+CFLAGS := -O2 -ggdb -I./ft8_lib -Wall
+LDFLAGS := -L./ft8_lib -L./termbox2 $(foreach x,${libs},-l${x}) -lft8 -ltermbox2
+subdirs += ft8_lib termbox2
 
 ###########
 # FT8 TUI #
@@ -36,6 +36,10 @@ ft8cli_objs += watch.o
 
 # ipc
 ft8cli_objs += ipc.o
+
+ft8cli_objs += fcc-db.o
+ft8cli_objs += qrz-xml.o
+ft8cli_objs += sql.o
 
 ###############
 # FT8 Decoder #
@@ -109,3 +113,6 @@ obj/%.o: %.c
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} -o $@ -c $<
 
+
+qrztest: qrztest2.c
+	gcc -o $@ $< -lxml2 -lcurl -I/usr/include/libxml2

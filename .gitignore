@@ -1,3 +1,4 @@
+# Exclude build artifacts
 *.d
 *.o
 *.ko
@@ -6,5 +7,10 @@
 *.so
 *.so.*
 
+# Exclude binaries
 ft8cli
 ft8decoder
+
+# These might contain sensitive user data...
+watchlist.txt
+config.json

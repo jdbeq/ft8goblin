@@ -38,8 +38,6 @@ from gnuradio import eng_notation
 from gnuradio import network
 from gnuradio import uhd
 import time
-import json
-from jsonschema import validate
 
 
 
@@ -100,12 +98,6 @@ class ft8capture(gr.top_block, Qt.QWidget):
         self.ft8_12m = ft8_12m = 24915000
         self.ft8_10m = ft8_10m = 28074000
         self.decimation = decimation = 1
-        with open('/home/joseph/ft8md/config.json') as fid:
-            self.cfg = cfg = json.load(fid)
-        self.cfg_schema = cfg_schema = ''
-        if cfg_schema:
-            with open(cfg_schema) as fid:
-                validate(cfg, json.load(fid))
         self.antenna = antenna = "RX2"
 
         ##################################################
@@ -831,12 +823,6 @@ class ft8capture(gr.top_block, Qt.QWidget):
         self.freq_xlating_fir_filter_xxx_3_0_0_0_0.set_taps(firdes.complex_band_pass(1, self.samp_rate, -self.samp_rate/(2*self.decimation), self.samp_rate/(2*self.decimation), self.slot_width))
         self.freq_xlating_fir_filter_xxx_3_0_0_0_0_0.set_taps(firdes.complex_band_pass(1, self.samp_rate, -self.samp_rate/(2*self.decimation), self.samp_rate/(2*self.decimation), self.slot_width))
         self.freq_xlating_fir_filter_xxx_3_0_0_0_0_0_0.set_taps(firdes.complex_band_pass(1, self.samp_rate, -self.samp_rate/(2*self.decimation), self.samp_rate/(2*self.decimation), self.slot_width))
-
-    def get_cfg(self):
-        return self.cfg
-
-    def set_cfg(self, cfg):
-        self.cfg = cfg
 
     def get_antenna(self):
         return self.antenna

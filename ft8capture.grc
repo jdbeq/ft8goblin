@@ -59,7 +59,7 @@ blocks:
     bus_structure: null
     coordinate: [328, 80.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: decimation
   id: variable
   parameters:
