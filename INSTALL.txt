@@ -1,4 +1,3 @@
 You will need the following packages installed on the host:
-	libyajl-dev
-	gnuradio
-	libuhd
+	libyajl-dev gnuradio libuhd librtlsdr-dev
+	libsqlite3-mod-spatialite librasterlite2-dev libspatialite-dev spatialite-bin 

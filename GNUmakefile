@@ -22,11 +22,17 @@ CFLAGS := -O2 -ggdb -I./ft8_lib -Wall
 LDFLAGS := -L./ft8_lib -L./termbox2 $(foreach x,${libs},-l${x}) -lft8 -ltermbox2
 subdirs += ft8_lib termbox2
 
+##################
+# Common Objects #
+##################
+common_objs += config.o
+common_objs += ipc.o
+
 ###########
 # FT8 TUI #
 ###########
-# Configuration parser
-ft8cli_objs += config.o
+# SQL utilities (sqlite3 / postgis wrapper)
+ft8cli_objs += sql.o
 
 # ncurses user interface
 ft8cli_objs += ui.o
@@ -34,12 +40,17 @@ ft8cli_objs += ui.o
 # watch lists / alerts
 ft8cli_objs += watch.o
 
-# ipc
-ft8cli_objs += ipc.o
-
+# FCC ULS database (US hams)
 ft8cli_objs += fcc-db.o
+
+# QRZ XML API callsign lookups (paid)
 ft8cli_objs += qrz-xml.o
-ft8cli_objs += sql.o
+
+# Geographic Names Information System (GNIS) local database lookup for place names
+ft8cli_objs += gnis-lookup.o
+
+# Utility functions for dealing with maidenhead coordinates
+ft8cli_objs += maidenhead.o
 
 ###############
 # FT8 Decoder #
@@ -47,7 +58,8 @@ ft8cli_objs += sql.o
 # ALSA audio support (if you're using ncurses, you might well not have pulse/pipewire either)
 ft8decoder_objs += alsa.o
 
-ft8decoder_objs += config.o
+# uhd (USRP) devices
+ft8decoder_objs += uhd.o
 
 # interface to the FT8 library
 ft8decoder_objs += ft8lib.o
@@ -62,15 +74,12 @@ ft8decoder_objs += udp_src.o
 # Source for the main decoder process
 ft8decoder_objs += decoder.o
 
-# ipc
-ft8decoder_objs += ipc.o
-
 ##############################################################
 ##############################################################
 
 # prepend obj/ to the obj names
-ft8cli_real_objs := $(foreach x,${ft8cli_objs},obj/${x})
-ft8decoder_real_objs := $(foreach x,${ft8decoder_objs},obj/${x})
+ft8cli_real_objs := $(foreach x,${ft8cli_objs} ${common_objs},obj/${x})
+ft8decoder_real_objs := $(foreach x,${ft8decoder_objs} ${common_objs},obj/${x})
 
 # Build all subdirectories first, then our binary
 world: subdirs-world ${bins}
@@ -101,7 +110,6 @@ subdirs-install:
 subdirs-world:
 	@echo "Building subdirectories..."
 	@for i in ${subdirs}; do ${MAKE} -C $$i ; done
-
 
 ft8cli: ${ft8cli_real_objs}
 	${CC} -o $@ $^ ${LDFLAGS} 
