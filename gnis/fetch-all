@@ -1,0 +1,25 @@
+# These steps, if run, should regenerate the gnis.db correctly...
+# They involve a few gb of downloads and some processing...
+
+wget https://prd-tnm.s3.amazonaws.com/StagedProducts/GeographicNames/GNIS_file_format.pdf
+wget https://geonames.nga.mil/geonames/GNSData/fc_files/Whole_World.7z
+states="AK AL AR AZ CA CO CT DC DE FL GA HI IA ID IL IN KS KY LA MA MD MI ME MN MS MT NC ND NE NH NJ NM NV NY OH OK OR PA RI SC SD TN TX UT VA WA WV WI WY"
+for i in ${states}; do
+   wget -c https://prd-tnm.s3.amazonaws.com/StagedProducts/GeographicNames/DomesticNames/DomesticNames_${i}_Text.zip
+done
+
+for i in *.zip; do
+   # unzip each state and remove the archive if successful
+   unzip $i && rm $i
+done
+
+# hide metadata, but keep it available for attribution
+mkdir -p Text/meta
+mv *.xml Text/meta
+
+# erase the stray .jpg's
+rm *.jpg
+
+# Extract the whole world data and delete archive if successful
+7z x Whole_World.7z && rm Whole_World.7z
+mv Whole_World.txt Text

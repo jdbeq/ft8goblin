@@ -14,3 +14,6 @@ ft8decoder
 # These might contain sensitive user data...
 watchlist.txt
 config.json
+
+# Tests...
+qrztest*
