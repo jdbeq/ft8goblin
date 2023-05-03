@@ -22,17 +22,19 @@
    },
    "logging": {
       "decoder-loglevel": "notice",
-      "decoder-logpath": "ft8decoder-%b.log",
+      "decoder-logpath": "file://ft8decoder-%b.log",
       "log-crashed-decoders": "true",
+      "sigcapd-loglevel": "warning",
+      "sigcapd-logpath": "file://sigcapd.log",
       "ui-loglevel": "error",
-      "ui-logpath": "ft8goblin.log"
+      "ui-logpath": "file://ft8goblin.log"
    },
    "site": {
       "mycall": "N0CALL",
-      "gridsquare": "EM98aa",
-      "elevation": "340M",
-      "city": "Earth City",
-      "state": "OH",
+      "gridsquare": "AA00aa",
+      "elevation": "300M",
+      "city": "Imaginary City",
+      "state": "WV",
       "country": "USA"
     },
     "recorder": {
