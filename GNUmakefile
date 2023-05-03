@@ -1,15 +1,15 @@
 all: world
 
-PREFIX ?= /usr/local
+PREFIX ?= /usr
 PULSEAUDIO=n
 ALSA=y
 
-bins := ft8cli ft8decoder
+bins := ft8goblin ft8decoder
 bin_install_path := ${PREFIX}/bin
-etc_install_path ?= /etc/ft8cli
-
-ext_libs := ft8_lib
-libs += ncurses yajl
+etc_install_path ?= /etc/ft8goblin
+lib_install_path := ${PREFIX}/lib
+# required libraries (-l${x} will be expanded later)
+libs += ncurses yajl ft8 ev termbox2 uhd rtlsdr
 
 ifeq (${PULSEAUDIO},y)
 libs += pulse
@@ -19,7 +19,7 @@ libs += asound
 endif
 
 CFLAGS := -O2 -ggdb -I./ft8_lib -Wall
-LDFLAGS := -L./ft8_lib -L./termbox2 $(foreach x,${libs},-l${x}) -lft8 -ltermbox2
+LDFLAGS := $(foreach x,${libs},-l${x})
 subdirs += ft8_lib termbox2
 
 ##################
@@ -27,30 +27,34 @@ subdirs += ft8_lib termbox2
 ##################
 common_objs += config.o
 common_objs += ipc.o
+common_objs += util.o
 
 ###########
 # FT8 TUI #
 ###########
 # SQL utilities (sqlite3 / postgis wrapper)
-ft8cli_objs += sql.o
+ft8goblin_objs += sql.o
 
 # ncurses user interface
-ft8cli_objs += ui.o
+ft8goblin_objs += ui.o
 
 # watch lists / alerts
-ft8cli_objs += watch.o
+ft8goblin_objs += watch.o
 
 # FCC ULS database (US hams)
-ft8cli_objs += fcc-db.o
+ft8goblin_objs += fcc-db.o
 
 # QRZ XML API callsign lookups (paid)
-ft8cli_objs += qrz-xml.o
+ft8goblin_objs += qrz-xml.o
 
 # Geographic Names Information System (GNIS) local database lookup for place names
-ft8cli_objs += gnis-lookup.o
+ft8goblin_objs += gnis-lookup.o
 
 # Utility functions for dealing with maidenhead coordinates
-ft8cli_objs += maidenhead.o
+ft8goblin_objs += maidenhead.o
+
+# for dealing with supervising capture and decode processes
+ft8goblin_objs += subproc.o
 
 ###############
 # FT8 Decoder #
@@ -78,25 +82,33 @@ ft8decoder_objs += decoder.o
 ##############################################################
 
 # prepend obj/ to the obj names
-ft8cli_real_objs := $(foreach x,${ft8cli_objs} ${common_objs},obj/${x})
+ft8goblin_real_objs := $(foreach x,${ft8goblin_objs} ${common_objs},obj/${x})
 ft8decoder_real_objs := $(foreach x,${ft8decoder_objs} ${common_objs},obj/${x})
 
 # Build all subdirectories first, then our binary
-world: subdirs-world ${bins}
+world: subdirs-world subdirs-install-sudo ${bins}
 
-install: subdirs-install
+# This will trigger subdirs-install if termbox2.so  is missing
+subdirs-install-sudo:
+	if [ ! -f ${lib_install_path}/libtermbox2.so.2.0.0 ]; then \
+	   sudo ${MAKE} subdirs-install; \
+	fi
+
+install:
 	@for i in ${bins}; do \
 		install -m 0755 $$i ${bin_install_path}/$$i; \
 	done
 	install -m 0755 ft8capture.py ${bin_install_path}/ft8capture
 .PHONY: clean subdirs-world
+
+distclean: clean subdirs-clean
+
 clean:
 	@echo "Cleaning..."
 
 # Try to enforce cleaning before other rules
 ifneq ($(filter clean,$(MAKECMDGOALS)),)
-	$(shell ${RM} -f ${bins} ${ft8cli_real_objs} ${ft8decoder_real_objs})
-	@${MAKE} subdirs-clean
+	$(shell ${RM} -f ${bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs})
 endif
 
 subdirs-clean:
@@ -111,7 +123,7 @@ subdirs-world:
 	@echo "Building subdirectories..."
 	@for i in ${subdirs}; do ${MAKE} -C $$i ; done
 
-ft8cli: ${ft8cli_real_objs}
+ft8goblin: ${ft8goblin_real_objs}
 	${CC} -o $@ $^ ${LDFLAGS} 
 
 ft8decoder: ${ft8decoder_real_objs}

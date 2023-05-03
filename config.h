@@ -9,6 +9,13 @@
 #include <errno.h>
 
 #define	PATHMAX_JSON	16
+///////////////////////
+// Some tunable bits //
+///////////////////////
+#define	MAX_MENULEVEL	8		// how deep can menus go?
+#define	MAX_MENUNAME	32		// how long can the menu name be?
+#define	MAX_MENUTITLE	128		// how long of a description is allowed?
+#define	MAX_MENUITEMS	32		// how many items per menu?
 
 // Global configuration pointer
 extern yajl_val cfg;

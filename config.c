@@ -103,7 +103,6 @@ yajl_val load_config(void) {
 
    // Try current directory first
    if ((rv = parse_config("config.json")) != NULL) {
-      cfg = rv;
       return rv;
    }
 
