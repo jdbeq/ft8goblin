@@ -2,8 +2,7 @@
  * Utility functions to make working with SQL more pleasant
  */
 #include "config.h"
-#include <sqlite3.h>
-#include <spatialite.h>
+#include "sql.h"
 
 typedef struct Database {
    enum {
@@ -19,7 +18,7 @@ Database *sql_open(const char *path) {
 
     if (path == NULL) {
        fprintf(stderr, "%s: path is NULL!\n", __FUNCTION__);
-       return -1;
+       return NULL;
     }
 
     if ((db = malloc(sizeof(Database))) == NULL) {

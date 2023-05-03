@@ -1,11 +1,28 @@
+# submodules
+ft8_lib/*
+termbox2/*
+
 # Exclude build artifacts
-*.d
 *.o
-*.ko
-*.obj
 *.map
 *.so
 *.so.*
+*.a
+*/*.o
+*/*.so
+*/*.so.*
+*/*.a
+ft8_lib/*.a
+ft8_lib/*.o
+ft8_lib/*.so
+ft8_lib/*.so.*
+ft8_lib/*/*.a
+ft8_lib/*/*.o
+ft8_lib/*/*.so
+ft8_lib/*/*.so.*
+termbox2/*.so
+termbox2/*.so.*
+termbox2/*.a
 
 # Exclude binaries
 ft8goblin
@@ -17,5 +34,20 @@ sigcapd
 watchlist.txt
 config.json
 
+# Databases that are large and can be dealt with by the builder...
+fcc_uls/fcc_uls.db
+fcc_uls/download/*
+gnis/Text/*
+gnis/gnis.db
+gnis/disclaimer.txt
+gnis/*.jpg
+gnis/*.txt
+gnis/*.zip
+gnis/*.xml
+gnis/*.7z
+
+##############
+# misc stuff #
+##############
 # Tests...
 qrztest*

@@ -5,7 +5,7 @@
  *
  * Hopefully I'll get around to cleaning up the scripts for that and including them soon!
  */
-
+#include "sql.h"
 /* In the PUBACC_EN table we have the following fields:
  * record_type
  * unique_system_identifier

@@ -103,7 +103,6 @@ sigcapd_objs += ipc.o
 
 # Source for UDP audio frames, such as from SDR software
 sigcapd_objs += udp_src.o
-
 sigcapd_objs += sigcapd.o
 
 ##############################################################
@@ -113,6 +112,7 @@ sigcapd_objs += sigcapd.o
 ft8goblin_real_objs := $(foreach x,${ft8goblin_objs} ${common_objs},obj/${x})
 ft8decoder_real_objs := $(foreach x,${ft8decoder_objs} ${common_objs},obj/${x})
 ft8encoder_real_objs := $(foreach x,${ft8encoder_objs} ${common_objs},obj/${x})
+sigcapd_real_objs := $(foreach x,${sigcapd_objs} ${common_objs},obj/${x})
 
 # Build all subdirectories first, then our binary
 world: subdirs-world subdirs-install-sudo ${bins}
@@ -136,7 +136,7 @@ clean:
 
 # Try to enforce cleaning before other rules
 ifneq ($(filter clean,$(MAKECMDGOALS)),)
-	$(shell ${RM} -f ${bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs})
+	$(shell ${RM} -f ${bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs}  ${sigcapd_real_objs})
 endif
 
 subdirs-clean:
@@ -159,6 +159,9 @@ ft8decoder: ${ft8decoder_real_objs}
 
 ft8encoder: ${ft8encoder_real_objs}
 	${CC} -o $@ $^ ${ft8coder_ldflags}
+
+sigcapd: ${sigcapd_real_objs}
+	${CC} -o $@ $^ ${sigcapd_ldflags}
 
 obj/%.o: %.c
 	@echo "[CC] $< -> $@"
