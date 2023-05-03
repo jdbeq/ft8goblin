@@ -37,10 +37,11 @@ subdirs += ft8_lib termbox2
 # Common Objects #
 ##################
 common_objs += config.o
+common_objs += dict.o
 common_objs += ipc.o
-common_objs += util.o
-common_objs += ringbuffer.o
 common_objs += logger.o
+common_objs += ringbuffer.o
+common_objs += util.o
 
 ####################
 # RUI: rustyaxe UI #
