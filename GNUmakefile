@@ -37,6 +37,7 @@ subdirs += ft8_lib termbox2
 # Common Objects #
 ##################
 common_objs += config.o
+common_objs += daemon.o
 common_objs += dict.o
 common_objs += ipc.o
 common_objs += logger.o
