@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 
    if (argc != 2) {
       fprintf(stderr, "ERROR: Only one argument is expected, the name of the band to decode on!\n");
-      fprintf(stderr, "All other settings are loaded from the configuration file config.json in the current directory or /etc/ft8md/\n");
+      fprintf(stderr, "All other settings are loaded from the configuration file config.json in the current directory or /etc/ft8goblin/\n");
       exit(1);
    }
 

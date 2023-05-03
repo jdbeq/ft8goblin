@@ -17,7 +17,7 @@
    "ipc": {
       "udp-port-base": 12000,
       "udp-packet-size": 1472,
-      "path": "ft8md.pipe",
+      "path": "ft8goblin.pipe",
       "mode": "0660"
    },
    "logging": {
@@ -25,7 +25,7 @@
       "decoder-logpath": "ft8decoder-%b.log",
       "log-crashed-decoders": "true",
       "ui-loglevel": "error",
-      "ui-logpath": "ft8cli.log"
+      "ui-logpath": "ft8goblin.log"
    },
    "site": {
       "mycall": "N0CALL",

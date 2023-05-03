@@ -107,7 +107,7 @@ yajl_val load_config(void) {
    }
 
    // and then the global directory, if config in pwd wasn't found...
-   if (rv == NULL && (rv = parse_config("/etc/ft8md/config.json")) != NULL)
+   if (rv == NULL && (rv = parse_config("/etc/ft8goblin/config.json")) != NULL)
       return rv;
 
    // nope, return error

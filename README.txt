@@ -15,7 +15,7 @@ Ex:
 	joe config.json
 
 Start the mess:
-	ft8cli
+	ft8goblin
 
-In theory, the client will keep the ft8 decoders running, check the logs
+In theory, the client will keep the ft8 decoders/etc running, check the logs
 (ft8decoder.$band.log)
