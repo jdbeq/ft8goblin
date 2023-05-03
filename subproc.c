@@ -9,6 +9,7 @@
 #include "config.h"
 #include "termbox2/termbox2.h"
 #include "subproc.h"
+#include "ui.h"
 
 extern int y;			// from ui.c
 static int max_subprocess = 0;
@@ -18,15 +19,17 @@ static subproc_t *children[MAX_SUBPROC];
 
 static void subproc_delete(int i) {
    if (children[i] == NULL) {
-      tb_printf(0, y++, TB_RED|TB_BOLD, 0, "%s: invalid child process %i (NULL) requested for deletion", __FUNCTION__, i);
+      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "%s: invalid child process %i (NULL) requested for deletion", __FUNCTION__, i);
       return;
    }
 
    free(children[i]);
    children[i] = NULL;
 }
-void subproc_killall(int signum) {
+
+int subproc_killall(int signum) {
    char *signame = NULL;
+   int rv = 0;
 
    if (signum == SIGTERM) {
       signame = "SIGTERM";
@@ -43,16 +46,19 @@ void subproc_killall(int signum) {
    }
 
    if (max_subprocess > MAX_SUBPROC) {
-      tb_printf(0, y++, TB_RED|TB_BOLD, 0, "%s: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", __FUNCTION__, max_subprocess, MAX_SUBPROC);
+      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "%s: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", __FUNCTION__, max_subprocess, MAX_SUBPROC);
       tb_present();
       exit(200);
    }
 
    int i = 0;
    for (i = 0; i < max_subprocess; i++) {
-      tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, "sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
+      printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
       tb_present();
-      kill(children[i]->pid, signum);
+
+      // if successfully sent signal, increment rv, so we'll sleep if called from subproc_shutdown()
+      if (kill(children[i]->pid, signum) == 0)
+         rv++;
 
       time_t wstart = time(NULL);
       int wstatus;
@@ -63,7 +69,7 @@ void subproc_killall(int signum) {
         continue;
       } else if (rv == 0) {
         // it didn't exit yet...
-//        tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, "-- no response, sleeping 3 seconds before next attempt...");
+//        printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "-- no response, sleeping 3 seconds before next attempt...");
 //        sleep(3);
         continue;
       } else {
@@ -74,13 +80,17 @@ void subproc_killall(int signum) {
 
    // delete the data structure
    subproc_delete(i);
+   // return > 0, if we sent any kill signals
+   return rv;
 }
 
 // Shut down subprocesses and throw a message to the console to let the operator know what's happening
 void subproc_shutdown(void) {
    y = 1;
-   subproc_killall(SIGTERM);
-   sleep(2);
-   subproc_killall(SIGKILL);
-   sleep(1);
+
+   if (subproc_killall(SIGTERM) > 0)
+      sleep(2);
+
+   if (subproc_killall(SIGKILL) > 0)
+      sleep(1);
 }

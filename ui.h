@@ -33,6 +33,8 @@ extern void menu_history_push(menu_t *menu, int item);
 extern void menu_history_pop(void);
 extern int menu_close(void);
 extern int menu_show(menu_t *menu);
+extern void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg);
+extern void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...);
 
 /////
 // These need to move elsewhere...

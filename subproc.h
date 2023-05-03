@@ -8,7 +8,7 @@ struct subproc {
    int 		pid;			// host process id
    char		name[64];		// subprocess name (for subproc_list() etc)
 };
-extern void subproc_killall(int signum);
+extern int subproc_killall(int signum);
 extern void subproc_shutdown(void);
 
 #endif	// !defined(_subproc_h)

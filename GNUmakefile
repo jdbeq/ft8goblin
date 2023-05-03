@@ -81,6 +81,9 @@ sigcapd_objs += uhd.o
 # XXX: This is a stub for now, feel free to write it :P
 sigcapd_objs += pulse.o
 
+# interprocess communication (with sigcapd and ft8goblin frontend)
+sigcapd_objs += ipc.o 
+
 # Source for UDP audio frames, such as from SDR software
 sigcapd_objs += udp_src.o
 

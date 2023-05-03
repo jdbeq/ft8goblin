@@ -67,6 +67,7 @@
    "ui": {
       "color": "true",
       "autoscroll": "true",
+      "scrollback-lines": 300,
       "alerts": {
          "alert-new-country": "true",
          "alert-new-dxcc": "true",

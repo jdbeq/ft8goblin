@@ -25,8 +25,19 @@ menu_history_t menu_history[MAX_MENULEVEL];	// history for ESC (go back) in menu
 int	menu_level = 0;		// Which menu level are we in? This is used to keep track of where we are in menu_history
 int	dying = 0;		// Are we shutting down?
 int	tx_enabled = 0;		// Master toggle to TX mode.
+int	scrollback_lines = -1;	// this is set in main below...
+int	active_band = 40;	// Which band are we TXing on?
+int	active_pane = 0;	// active pane (0: TextArea, 1: TX input)
 
-// X and Y coordinates of the display
+int height = -1, width = -1;
+int line_textarea_top = -1,	// top of scrollable TextArea
+    line_textarea_bottom = -1;	// bottom of scrollable TextArea
+int line_status = -1;		// status line
+int line_input = -1;		// input field
+const char *mycall = NULL;	// cfg:ui/mycall
+const char *gridsquare = NULL;	// cfg:ui/gridsquare
+
+// X and Y coordinates of the display (XXX: Get rid of this)
 int	x = 0, y = 0;		// display coordinates
 
 // main menu items
@@ -56,13 +67,167 @@ menu_item_t menu_bands_items[] = {
 
 menu_t menu_bands = { "Band Settings", "Configure RX and TX bands here", menu_bands_items };
 
+////////////////////////////////////////////////////////////
+// These let us print unicode to an exact screen location //
+// - We call these after clearing screen when scrolling.  //
+////////////////////////////////////////////////////////////
+void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg) {
+    while (*str) {
+        uint32_t uni;
+        str += tb_utf8_char_to_unicode(&uni, str);
+        tb_set_cell(x, y, uni, fg, bg);
+        x++;
+    }
+}
+
+void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...) {
+    char buf[4096];
+    va_list vl;
+    va_start(vl, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, vl);
+    va_end(vl);
+    print_tb(buf, x, y, fg, bg);
+}
+
+//////////////////////////
+// Parse out color tags //
+//////////////////////////
+static int parse_color_str(const char *str) {
+    int rv = -1;
+
+    // XXX: Do stuff
+    return rv;
+}
+///////////////////////////
+// Print to the TextArea //
+///////////////////////////
+void ta_printf(int x, int y, const char *fmt, ...) {
+    char buf[4096];
+    int bg = 0, fg = 0;
+    va_list vl;
+    va_start(vl, fmt);
+    // XXX: Parse the arguments out and look for ${COLOR} tags
+    vsnprintf(buf, sizeof(buf), fmt, vl);
+    va_end(vl);
+
+    print_tb(buf, x, y, fg, bg);
+}
+
+///////////////////////////////////////////////////////
 static void exit_fix_config(void) {
    printf("Please edit your config.json and try again!\n");
    exit(255);
 }
 
 static void print_help(void) {
-   tb_printf(0, 0, TB_BLUE|TB_BOLD, 0, "Keys: ESC Exit Menu, ^Q / ^X Exit, ^B Bands Menu, ^M Menu, ^T Toggle TX, ^H Halt TX immediately");
+   int offset = 0;
+   printf_tb(offset, 0, TB_GREEN|TB_BOLD, 0, "*Keys* ");
+   offset += 8;
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "ESC ");
+   offset += 4;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Go Back ");
+   offset += 8;
+
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "TAB ");
+   offset += 4;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Switch Panes ");
+   offset += 13;
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^Q/^X ");
+   offset += 6;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Exit ");
+   offset + 5;
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^B ");
+   offset += 3;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Band Menu ");
+   offset += 10;
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^M ");
+   offset += 3;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Menu ");
+   offset += 5;
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^T ");
+   offset += 3;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Toggle TX ");
+   offset += 10;
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^H ");
+   offset += 3;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Halt TX immed.");
+}
+
+static void print_status(void) {
+   int offset = 0;
+
+   // callsign
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyCall:");
+   offset += 8;
+   printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "%s", mycall);
+   offset += strlen(mycall);
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
+   offset += 2;
+
+   // grid square
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyGrid:");
+   offset += 8;
+   printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "%s", gridsquare);
+   offset += strlen(gridsquare);
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
+   offset += 2;
+
+   // TX enabled status
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[");
+   offset++;
+   printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "TX:");
+   offset += 3;
+
+   if (tx_enabled) {
+      printf_tb(offset, height - 1, TB_RED|TB_BOLD, 0, "ON");
+      offset += 2;
+   } else {
+      printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "OFF");
+      offset += 3;
+   }
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
+   offset += 2;
+
+   // show bands with TX enabled, from yajl tree...
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[");
+   offset++;
+   printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "TXBand:");
+   offset += 7;
+
+   if (active_band != 0) {
+      printf_tb(offset, height - 1, TB_RED|TB_BOLD, 0, "%dm", active_band);
+      offset += 3;
+   }
+
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
+   offset += 2;
+
+   
+   // print the PTT status
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[");
+   offset++;
+   printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "PTT:");
+   offset += 4;
+#if	0
+   // Explode the list of radios actively PTTing
+   for (int i = 0; i < max_rigs; i++) {
+      if (rigs[i].ptt_active) {
+         printf_tb(offset, height - 1, TB_RED|TB_BOLD, 0, "%d", i);
+      }
+   }
+#endif
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
+   offset += 2;
+   tb_present();
+}
+
+static void print_input(void) {
+}
+
+void redraw_screen(void) {
+   print_help();
+   print_input();
+   print_status();
    tb_present();
 }
 
@@ -80,7 +245,7 @@ int menu_history_clear(void) {
 
 void menu_history_push(menu_t *menu, int item) {
    if (menu_level >= MAX_MENULEVEL) {
-      tb_printf(0, y++, TB_RED|TB_BOLD, 0, "You cannot go deeper than %d menu_level. sorry!", MAX_MENULEVEL);
+      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "You cannot go deeper than %d menu_level. sorry!", MAX_MENULEVEL);
       tb_present();
       return;
    }
@@ -103,7 +268,7 @@ void menu_history_pop(void) {
 }
 
 int menu_close(void) {
-   tb_printf(0, y++, TB_RED, 0, "Menu level %d closed!", menu_level);
+   printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "Menu level %d closed!", menu_level);
    tb_present();
 
    // remove one item from the end of menu_history...
@@ -113,18 +278,18 @@ int menu_close(void) {
 
 int menu_show(menu_t *menu) {
    if (menu_level >= MAX_MENULEVEL) {
-      tb_printf(0, y++, TB_RED|TB_BOLD, 0, "You have reached the maximum menu depth allowed (%d), please use ESC to go back some!", MAX_MENULEVEL);
+      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "You have reached the maximum menu depth allowed (%d), please use ESC to go back some!", MAX_MENULEVEL);
       return -1;
    }
 
    tb_clear();
-   print_help();
+   redraw_screen();
    y = 1;
 
    // Add the menu to the menu history 
    menu_history_push(menu, 0);
 
-   tb_printf(0, y++, TB_RED|TB_BOLD, 0, "Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
+   printf_tb(0, y++, TB_RED|TB_BOLD, 0, "Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
    tb_present();
    return 0;
 }
@@ -135,62 +300,104 @@ static void termbox_cb(EV_P_ ev_timer *w, int revents) {
    process_input(&evt);
 }
 
+static void resize_window(void) {
+   height = tb_height();
+   width = tb_width();
+
+   if (width < 80 || height < 20) {
+      tb_clear();
+      tb_present();
+      tb_shutdown();
+      fprintf(stderr, "[display] Your terminal has a size of %dx%d, this is too small! I cannot continue...\n", width, height);
+      dying = 1;
+      exit(200);
+   } else {
+      printf_tb(0, y, TB_GREEN|TB_BOLD, 0, "[display]");
+      printf_tb(10, y++, TB_WHITE|TB_BOLD, 0, "Resolution %dx%d is acceptable!", width, height);
+   }
+
+   line_textarea_top = 1;
+   line_textarea_bottom = height - 3;
+   line_status = height - 1;
+   line_input = height - 2;
+   scrollback_lines = tb_height() * 5;
+}
+
 //
 // Keyboard/mouse input handler
 //   
+
 static void process_input(struct tb_event *evt) {
    if (evt == NULL) {
       // XXX: log the error!
-      tb_printf(0, y++, TB_RED|TB_BOLD, 0, "%s called with ev == NULL wtf?!", __FUNCTION__);
+      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "%s called with ev == NULL wtf?!", __FUNCTION__);
       tb_present();
       return;
    }
 
-   // Is the key a valid command?
-   if (evt->key == TB_KEY_ESC) {
-      if (menu_level > 0) {
-         menu_close();
-      } else {
-        menu_level = 0; // reset it to zero
-        tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, "The menu is already closed!");
-      }
-   } else if (evt->key == TB_KEY_ARROW_LEFT) { 			// left cursor
-      tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, "<");
-   } else if (evt->key == TB_KEY_ARROW_RIGHT) {			// right cursor
-      tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, ">");
-   } else if (evt->key == TB_KEY_ARROW_UP) {			// up cursor
-      tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, "^");
-   } else if (evt->key == TB_KEY_ARROW_DOWN) {			// down cursor
-      tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, "V");
-   } else if (evt->key == TB_KEY_CTRL_B) {			// ^B
-      if (menu_level == 0) {			// only if we're at main TUI screen (not in a menu)
-         menu_show(&menu_bands);
-      }
-   } else if (evt->key == TB_KEY_CTRL_H) {			// ^H
-      tx_enabled = 0;
-      halt_tx_now();
-   } else if (evt->key == TB_KEY_CTRL_M) { 			// Is it ^M?
-      if (menu_level == 0) {
-         menu_history_clear();
-         menu_show(&menu_main);
-      } else {
-         // pass ^M through
-      }
-   } else if (evt->key == TB_KEY_CTRL_T) {		// ^T
-      if (menu_level == 0) {
-         toggle(&tx_enabled);
-         tb_printf(0, y++, TB_RED|TB_BOLD, 0, "TX %sabled globally!", (tx_enabled ? "en" : "dis"));
-      } else {
-         // always disable if in a submenu, only allow activating TX from home screen
+   if (evt->type == TB_EVENT_KEY) {
+      // Is the key a valid command?
+      if (evt->key == TB_KEY_ESC) {
+         if (menu_level > 0) {
+            menu_close();
+         } else {
+           menu_level = 0; // reset it to zero
+           printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "The menu is already closed!");
+         }
+      } else if (evt->key == TB_KEY_TAB) {
+        if (menu_level == 0) {		// only apply in main screen
+           if (active_pane == 0)
+              active_pane = 1;
+           else
+              active_pane = 0;
+        }
+      } else if (evt->key == TB_KEY_ARROW_LEFT) { 			// left cursor
+         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "<");
+      } else if (evt->key == TB_KEY_ARROW_RIGHT) {			// right cursor
+         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, ">");
+      } else if (evt->key == TB_KEY_ARROW_UP) {			// up cursor
+         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "^");
+      } else if (evt->key == TB_KEY_ARROW_DOWN) {			// down cursor
+         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "V");
+      } else if (evt->key == TB_KEY_CTRL_B) {			// ^B
+         if (menu_level == 0) {			// only if we're at main TUI screen (not in a menu)
+            menu_show(&menu_bands);
+         }
+      } else if (evt->key == TB_KEY_CTRL_H) {			// ^H
          tx_enabled = 0;
-         tb_printf(0, y++, TB_RED|TB_BOLD, 0, "TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+         halt_tx_now();
+      } else if (evt->key == TB_KEY_CTRL_M) { 			// Is it ^M?
+         if (menu_level == 0) {
+            menu_history_clear();
+            menu_show(&menu_main);
+         } else {
+            // pass ^M through
+         }
+      } else if (evt->key == TB_KEY_CTRL_T) {		// ^T
+         if (menu_level == 0) {
+            toggle(&tx_enabled);
+            redraw_screen();
+            printf_tb(0, y++, TB_RED|TB_BOLD, 0, "TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+         } else {
+            // always disable if in a submenu, only allow activating TX from home screen
+            tx_enabled = 0;
+            printf_tb(0, y++, TB_RED|TB_BOLD, 0, "TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+         }
+      } else if (evt->key == TB_KEY_CTRL_X || evt->key == TB_KEY_CTRL_Q) {	// is it ^X or ^Q? If so exit
+         printf_tb(0, y++, TB_RED, 0, "Goodbye! Hope you had a nice visit!");
+         fini();
+         return;
+      } else {      					// Nope - display the event data for debugging
+         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
       }
-   } else if (evt->key == TB_KEY_CTRL_X || evt->key == TB_KEY_CTRL_Q) {	// is it ^X or ^Q? If so exit
-      tb_printf(0, y++, TB_RED, 0, "Goodbye! Hope you had a nice visit!");
-      fini();
-      return;
-   } else {      					// Nope - display the event data for debugging
-      tb_printf(0, y++, TB_YELLOW|TB_BOLD, 0, "unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
+   } else if (evt->type == TB_EVENT_RESIZE) {
+      // deal with window resizes (redraw everything)
+      resize_window();
+      x = 0, y = 0;
+      tb_clear();
+      redraw_screen();
+   } else if (evt->type == TB_EVENT_MOUSE) {
+      // handle mouse interactions
    }
    tb_present();
 }
@@ -198,7 +405,7 @@ static void process_input(struct tb_event *evt) {
 static void fini(void) {
    // Tear down to exit
    tb_clear();
-   tb_printf(0, 0, TB_RED|TB_BOLD, 0, "ft8goblin exiting, please wait for subpprocesses to halt...");
+   printf_tb(0, 0, TB_RED|TB_BOLD, 0, "ft8goblin exiting, please wait for subpprocesses to halt...");
    tb_present();
    dying = 1;
 
@@ -212,9 +419,10 @@ static void fini(void) {
    exit(0);
 }
 
+
 int main(int argc, char **argv) {
    int fd_tb_tty = -1, fd_tb_resize = -1;
-   ev_io termbox_watcher;
+   ev_io termbox_watcher, termbox_resize_watcher;
    struct ev_loop *loop = EV_DEFAULT;
 
    // print this even though noone will see it, except in case of error exit ;)
@@ -224,29 +432,33 @@ int main(int argc, char **argv) {
    if (!(cfg = load_config()))
       exit_fix_config();
 
+   mycall = cfg_get_str(cfg, "site/mycall");
+   gridsquare = cfg_get_str(cfg, "site/gridsquare");
+
    ///////////////////////////
    // Perform startup tasks //
    ///////////////////////////
 
    // Initialize termbox
    tb_init();
+   resize_window();
    y = 1;
-   tb_printf(0, y++, TB_GREEN|TB_BOLD, 0, "Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
+   printf_tb(0, y++, TB_CYAN|TB_BOLD, 0, "Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
 
-   int height = tb_height(), width = tb_width();;
+   /////////////////////////////////
+   // Setup the scrollback buffer //
+   /////////////////////////////////
+   scrollback_lines = cfg_get_int(cfg, "ui/scrollback-lines");
 
-   if (width < 80 || height < 20) {
-      tb_clear();
-      tb_present();
-      tb_shutdown();
-      fprintf(stderr, "[display] Your terminal has a size of %dx%d, this is too small! I cannot continue...\n", width, height);
-      dying = 1;
-      exit(200);
-   } else {
-      tb_printf(0, y++, TB_GREEN, 0, "[display] Resolution %dx%d is acceptable!", width, height);
+   if (scrollback_lines == -1) {
+      scrollback_lines = tb_height() * 5;
+      printf("ui/scrollback-lines not set or unparsable in configuration. defaulting to %d", scrollback_lines);
    }
-   print_help();
-   y++;
+
+   /////////////////////
+   // Draw the screen //
+   /////////////////////
+   redraw_screen();
 
    ///////////////////////////////////////////
    // Setup libev to handle termbox2 events //
@@ -257,12 +469,14 @@ int main(int argc, char **argv) {
    if (fd_tb_tty >= 2 && fd_tb_resize >= 2) {
       // add to libev set
    } else {
-      tb_printf(0, y++, TB_RED|TB_BOLD, 0, "tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
+      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
       tb_present();
       exit(200);
    }
-   ev_io_init (&termbox_watcher, termbox_cb, fd_tb_tty, EV_READ);
-   ev_io_start (loop, &termbox_watcher);
+   ev_io_init(&termbox_watcher, termbox_cb, fd_tb_tty, EV_READ);
+   ev_io_init(&termbox_resize_watcher, termbox_cb, fd_tb_resize, EV_READ);
+   ev_io_start(loop, &termbox_watcher);
+   ev_io_start(loop, &termbox_resize_watcher);
 
    // Initialize the GNIS place names database
 
@@ -297,11 +511,12 @@ int main(int argc, char **argv) {
 // Menus //
 ///////////
 int view_config(void) {
-   //
+   // XXX: Show the yajl config tree as a scrollable 'menu', without editing
    return 0;
 }
 
 void halt_tx_now(void) {
-   tb_printf(0, y++, TB_RED|TB_BOLD, 0, "Halting TX!");
+   printf_tb(0, y++, TB_RED|TB_BOLD, 0, "Halting TX!");
+   redraw_screen();
    tb_present();
 }
