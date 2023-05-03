@@ -8,10 +8,10 @@ void exit_fix_config(void) {
 }
 
 int main(int argc, char **argv) {
-   printf("ft8decoder: Sub-process used to decode ft8 messages from audio clips from various sources\n\n");
+   printf("ft8encoder: Sub-process used to encode ft8 messages for transmission\n\n");
 
    if (argc != 2) {
-      fprintf(stderr, "ERROR: Only one argument is expected, the name of the band to decode on!\n");
+      fprintf(stderr, "ERROR: Only one argument is expected, the name of the band to encode on!\n");
       fprintf(stderr, "All other settings are loaded from the configuration file config.json in the current directory or /etc/ft8md/\n");
       exit(1);
    }

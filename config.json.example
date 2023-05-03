@@ -1,10 +1,19 @@
 {
    "version": 1,
-    "device": {
-       "name": "usrp1",
-       "type": "uhd",
-       "devstring": "type=x300,subdev=B:0,RX2"
-   },
+    "devices": [
+       {
+          "name": "usrp0",
+          "type": "uhd",
+          "devstring": "type=x300,subdev=B:0,RX2",
+          "log-dropped-frames": "false"
+       },
+       {
+          "name": "rtlsdr0",
+          "type": "rtlsdr",
+          "serial": "RTLV3001",
+          "log-dropped-frames": "false"
+       }
+   ],
    "ipc": {
       "udp-port-base": 12000,
       "udp-packet-size": 1472,
@@ -20,15 +29,35 @@
    },
    "site": {
       "mycall": "N0CALL",
-      "gridsquare": "EM98aA",
+      "gridsquare": "EM98aa",
       "elevation": "340M",
-      "city": "Earth",
+      "city": "Earth City",
       "state": "OH",
       "country": "USA"
     },
-
+    "recorder": {
+      "minimum-lifetime": "30d",
+      "maximum-lifetime": "1y",
+      "record-qsos": "true",
+      "record-callsign-lookup": "true"
+    },
+    "callsign-lookup": {
+      "use-uls": "true",
+      "fcc-uls-database": "fcc_uls.db",
+      "use-qrz": "false",
+      "qrz-api-key": "xxxx",
+      "qrz-username": "xxxx",
+      "qrz-password": "xxxx",
+      "cache-online-lookups": "true",
+      "cache-expiry": "1d",
+      "cache-keep-stale-if-offline": "true"
+   },
+   "gnis-lookup": {
+      "gnis-db": "gnis.db",
+      "use-gnis": "false"
+   },
    "supervise-decoders": "true",
-   "supervise-ft8capture": "true",
+   "supervise-sigcapd": "true",
 
    "ft8decoder": {
       "waterfall-update-main": 0.1,
@@ -51,7 +80,7 @@
 
    "bands": [
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-160m",
          "mode": "ft8",
          "frequency": 1084000,
@@ -59,7 +88,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-80m",
          "mode": "ft8",
          "frequency": 3573000,
@@ -67,7 +96,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-60m",
          "mode": "ft8",
          "frequency": 5357000,
@@ -75,7 +104,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-40m",
          "mode": "ft8",
          "frequency": 7074000,
@@ -83,7 +112,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-30m",
          "mode": "ft8",
          "frequency": 10133000,
@@ -91,7 +120,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-20m",
          "mode": "ft8",
          "frequency": 14074000,
@@ -99,7 +128,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-17m",
          "mode": "ft8",
          "frequency": 18100000,
@@ -107,7 +136,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-15m",
          "mode": "ft8",
          "frequency": 21074000,
@@ -115,7 +144,7 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-12m",
          "mode": "ft8",
          "frequency": 24915000,
@@ -123,11 +152,19 @@
          "width": 3500
       },
       {
-         "device": "usrp1",
+         "device": "usrp0",
          "name": "ft8-10,",
          "mode": "ft8",
          "frequency": 28074000,
          "port": 12010,
+         "width": 3500
+      },
+      {
+         "device": "rtlsdr0",
+         "name": "ft8-6,",
+         "mode": "ft8",
+         "frequency": 28074000,
+         "port": 12011,
          "width": 3500
       }
    ]

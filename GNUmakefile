@@ -4,7 +4,8 @@ PREFIX ?= /usr
 PULSEAUDIO=n
 ALSA=y
 
-bins := ft8goblin ft8decoder
+bins := ft8goblin ft8decoder ft8encoder sigcapd
+
 bin_install_path := ${PREFIX}/bin
 etc_install_path ?= /etc/ft8goblin
 lib_install_path := ${PREFIX}/lib
@@ -56,27 +57,34 @@ ft8goblin_objs += maidenhead.o
 # for dealing with supervising capture and decode processes
 ft8goblin_objs += subproc.o
 
-###############
-# FT8 Decoder #
-###############
-# ALSA audio support (if you're using ncurses, you might well not have pulse/pipewire either)
-ft8decoder_objs += alsa.o
-
-# uhd (USRP) devices
-ft8decoder_objs += uhd.o
+###################
+# FT8 De/En-coder #
+###################
 
 # interface to the FT8 library
-ft8decoder_objs += ft8lib.o
+ft8coder_objs += ft8lib.o
 
-# Interface around GNU radio
+
+ft8decoder_objs += decoder.o ${ft8coder_objs}
+ft8encoder_objs += encoder.o ${ft8coder_objs}
+
+
+###########
+# sigcapd #
+###########
+# ALSA audio support (if you're using ncurses, you might well not have pulse/pipewire either)
+sigcapd_objs += alsa.o
+
+# uhd (USRP) devices
+sigcapd_objs += uhd.o
+
 # XXX: This is a stub for now, feel free to write it :P
-ft8decoder_objs += pulse.o
+sigcapd_objs += pulse.o
 
 # Source for UDP audio frames, such as from SDR software
-ft8decoder_objs += udp_src.o
+sigcapd_objs += udp_src.o
 
-# Source for the main decoder process
-ft8decoder_objs += decoder.o
+sigcapd_objs += sigcapd.o
 
 ##############################################################
 ##############################################################
@@ -84,6 +92,7 @@ ft8decoder_objs += decoder.o
 # prepend obj/ to the obj names
 ft8goblin_real_objs := $(foreach x,${ft8goblin_objs} ${common_objs},obj/${x})
 ft8decoder_real_objs := $(foreach x,${ft8decoder_objs} ${common_objs},obj/${x})
+ft8encoder_real_objs := $(foreach x,${ft8encoder_objs} ${common_objs},obj/${x})
 
 # Build all subdirectories first, then our binary
 world: subdirs-world subdirs-install-sudo ${bins}
@@ -98,7 +107,6 @@ install:
 	@for i in ${bins}; do \
 		install -m 0755 $$i ${bin_install_path}/$$i; \
 	done
-	install -m 0755 ft8capture.py ${bin_install_path}/ft8capture
 .PHONY: clean subdirs-world
 
 distclean: clean subdirs-clean
@@ -129,10 +137,12 @@ ft8goblin: ${ft8goblin_real_objs}
 ft8decoder: ${ft8decoder_real_objs}
 	${CC} -o $@ $^ ${LDFLAGS}
 
+ft8encoder: ${ft8encoder_real_objs}
+	${CC} -o $@ $^ ${LDFLAGS}
+
 obj/%.o: %.c
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} -o $@ -c $<
-
 
 qrztest: qrztest2.c
 	gcc -o $@ $< -lxml2 -lcurl -I/usr/include/libxml2

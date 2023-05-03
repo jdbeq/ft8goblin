@@ -8,8 +8,10 @@
 *.so.*
 
 # Exclude binaries
-ft8cli
+ft8goblin
 ft8decoder
+ft8encoder
+sigcapd
 
 # These might contain sensitive user data...
 watchlist.txt
