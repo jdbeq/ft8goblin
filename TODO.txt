@@ -1,0 +1,11 @@
+These are not in any particular order, but stuff near the bottom is probably far off...
+------
+
+* Finish TextArea implementation
+* Finish InputBox implementation
+* Complete ft8decoder using ft8lib for ft4 and ft8
+* Get messages displaying in ft8goblin from test samples sent to ft8decoder processes
+* Get sigcapd pulling from usrp and slicing appropriately ot feed ft8decoder processes
+* Work on database logging
+* Add TX support, using usrp or hamlib supported rigs
+* Document things
