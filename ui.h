@@ -1,50 +1,40 @@
 #if	!defined(_ui_h)
 #define	_ui_h
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include "menu.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-   ///////////////////
-   // forward declare this, so we can use it in menu_t and menu_history_t below
-   typedef struct menu_item menu_item_t;
-
-   typedef struct menu_s {
-     char	menu_name[MAX_MENUNAME];
-     char	menu_title[MAX_MENUTITLE];
-     menu_item_t *menu_items[MAX_MENUITEMS];
-   } menu_t;
-
-   struct menu_item {
-     char	item_name[MAX_MENUNAME];
-     char	item_title[MAX_MENUTITLE];
-     int	(*callback)();		// Callback to fire when clicked
-     /////////////////////////////////////////////////
-     // Only one of these can be selected at a time //
-     /////////////////////////////////////////////////
-     menu_t *item_menu;		// menu target (menu pointer)
-     int	  item_menu_item;	// menu item (menu pointer)
-   };
-
-   typedef struct menu_history {
-      menu_t *menu;
-      int	   item;		// menu.menu_items[x]
-   } menu_history_t;
-
-   extern menu_history_t menu_history[MAX_MENULEVEL];	// history for ESC (go back) in menus ;)
-   extern int menu_history_clear(void);
-   extern void menu_history_push(menu_t *menu, int item);
-   extern void menu_history_pop(void);
-   extern int menu_close(void);
-   extern int menu_show(menu_t *menu);
+   // Print *anywhere* on the screen (dont try to print on the TextArea)
    extern void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg);
    extern void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...);
+   // Handling of the TextArea
    extern void ta_redraw(void);
    extern int ta_append(const char *buf);
+   extern void ta_printf(const char *fmt, ...);
 
    /////
+   extern int	scrollback_lines;	// this is set in main below...
+   extern int	active_band;		// Which band are we TXing on?
+   extern int	active_pane;		// active pane (0: TextArea, 1: TX input)
+
+   extern int height, width;
+   extern int line_textarea_top,	// top of scrollable TextArea
+       line_textarea_bottom;		// bottom of scrollable TextArea
+   extern int line_status;		// status line
+   extern int line_input;		// input field
+   extern const char *mycall;		// cfg:ui/mycall
+   extern const char *gridsquare;	// cfg:ui/gridsquare
+
    // These need to move elsewhere...
    extern void halt_tx_now(void);
    extern int view_config(void);
+   extern int dying;			// Are we shutting down?
+   extern int tx_enabled;		// Master toggle to TX mode.
 #ifdef __cplusplus
 };
 #endif
