@@ -38,7 +38,7 @@ const char *mycall = NULL;	// cfg:ui/mycall
 const char *gridsquare = NULL;	// cfg:ui/gridsquare
 
 // X and Y coordinates of the display (XXX: Get rid of this)
-int	x = 0, y = 0;		// display coordinates
+//int	x = 0, y = 0;		// display coordinates
 
 // main menu items
 menu_item_t menu_main_items[] = {
@@ -72,45 +72,117 @@ menu_t menu_bands = { "Band Settings", "Configure RX and TX bands here", menu_ba
 // - We call these after clearing screen when scrolling.  //
 ////////////////////////////////////////////////////////////
 void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg) {
-    while (*str) {
-        uint32_t uni;
-        str += tb_utf8_char_to_unicode(&uni, str);
-        tb_set_cell(x, y, uni, fg, bg);
-        x++;
-    }
+   while (*str) {
+       uint32_t uni;
+       str += tb_utf8_char_to_unicode(&uni, str);
+       tb_set_cell(x, y, uni, fg, bg);
+       x++;
+   }
 }
 
 void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...) {
-    char buf[4096];
-    va_list vl;
-    va_start(vl, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, vl);
-    va_end(vl);
-    print_tb(buf, x, y, fg, bg);
+   char buf[8192];
+   va_list vl;
+   va_start(vl, fmt);
+   vsnprintf(buf, sizeof(buf), fmt, vl);
+   va_end(vl);
+   print_tb(buf, x, y, fg, bg);
 }
 
 //////////////////////////
 // Parse out color tags //
 //////////////////////////
-static int parse_color_str(const char *str) {
-    int rv = -1;
+// XXX: Really we need shorter tokens for these like
+static int parse_color(const char *str) {
+   int rv = -1;
 
-    // XXX: Do stuff
-    return rv;
+   if (strncmp(str, "BLACK", 5) == 0) {
+      rv = TB_BLACK|TB_BOLD;
+   } else if (strncmp(str, "black", 5) == 0) {
+      rv = TB_BLACK;
+   } else if (strncmp(str, "RED", 3) == 0) {
+      rv = TB_RED|TB_BOLD;
+   } else if (strncmp(str, "red", 3) == 0) {
+      rv = TB_RED;
+   } else if (strncmp(str, "GREEN", 5) == 0) {
+      rv = TB_GREEN|TB_BOLD;
+   } else if (strncmp(str, "green", 5) == 0) {
+      rv = TB_GREEN;
+   } else if (strncmp(str, "YELLOW", 6) == 0) {
+      rv = TB_YELLOW|TB_BOLD;
+   } else if (strncmp(str, "yellow", 6) == 0) {
+      rv = TB_YELLOW;
+   } else if (strncmp(str, "BLUE", 4) == 0) {
+      rv = TB_BLUE|TB_BOLD;
+   } else if (strncmp(str, "blue", 4) == 0) {
+      rv = TB_BLUE;
+   } else if (strncmp(str, "MAGENTA", 7) == 0) {
+      rv = TB_MAGENTA|TB_BOLD;
+   } else if (strncmp(str, "magenta", 7) == 0) {
+      rv = TB_MAGENTA;
+   } else if (strncmp(str, "CYAN", 4) == 0) {
+      rv = TB_CYAN|TB_BOLD;
+   } else if (strncmp(str, "cyan", 4) == 0) {
+      rv = TB_CYAN;
+   } else if (strncmp(str, "WHITE", 5) == 0) {
+      rv = TB_WHITE|TB_BOLD;
+   } else if (strncmp(str, "white", 5) == 0) {
+      rv = TB_WHITE;
+   } else
+      rv = TB_DEFAULT;
+
+   return rv;
+}
+
+typedef struct ColorPair ColorPair {
+   int fg, bg;
+};
+
+// Use parse_color above to parse out color strings, whether just $FG$ or $FG,BG$
+static ColorPair parse_color_str(const char *str) {
+   ColorPair cp;
+   
+}
+
+//////////////////////////////////////////////
+// Redraw the TextArea from the ring buffer //
+//////////////////////////////////////////////
+void ta_redraw(void) {
+   // Find the end of the ring buffer
+   // Start drawing from the bottom up
+   for (int i = line_textarea_bottom; i--; i > line_textarea_top) {
+      // Draw the current line of the ring buffer
+
+      // Is the previous line valid?
+
+      // If not, break
+//      break;
+   }
+}
+
+//////////////////////////////////////////
+// Append to the end of the ring buffer //
+//////////////////////////////////////////
+int ta_append(const char *buf) {
+   int rv = 0;
+
+   // Find end of ring buffer (last timestamp)
+   // Replace the NEXT entry in ring buffer with our buffer
+   return rv;
 }
 ///////////////////////////
 // Print to the TextArea //
 ///////////////////////////
-void ta_printf(int x, int y, const char *fmt, ...) {
+void ta_printf(const char *fmt, ...) {
     char buf[4096];
-    int bg = 0, fg = 0;
+    int bg = 0, fg = 0, my_y = 0, my_x = 0;
     va_list vl;
     va_start(vl, fmt);
-    // XXX: Parse the arguments out and look for ${COLOR} tags
+
     vsnprintf(buf, sizeof(buf), fmt, vl);
     va_end(vl);
-
-    print_tb(buf, x, y, fg, bg);
+    ta_append(buf);
+//    print_tb(buf, my_x, my_y, fg, bg);
 }
 
 ///////////////////////////////////////////////////////
@@ -122,7 +194,7 @@ static void exit_fix_config(void) {
 static void print_help(void) {
    int offset = 0;
    printf_tb(offset, 0, TB_GREEN|TB_BOLD, 0, "*Keys* ");
-   offset += 8;
+   offset += 7;
    printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "ESC ");
    offset += 4;
    printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Go Back ");
@@ -135,7 +207,7 @@ static void print_help(void) {
    printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^Q/^X ");
    offset += 6;
    printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Exit ");
-   offset + 5;
+   offset += 5;
    printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^B ");
    offset += 3;
    printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Band Menu ");
@@ -222,10 +294,13 @@ static void print_status(void) {
 }
 
 static void print_input(void) {
+   // XXX: Draw the input text area
 }
 
 void redraw_screen(void) {
    print_help();
+   // XXX: do this
+   ta_redraw();
    print_input();
    print_status();
    tb_present();
@@ -245,7 +320,7 @@ int menu_history_clear(void) {
 
 void menu_history_push(menu_t *menu, int item) {
    if (menu_level >= MAX_MENULEVEL) {
-      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "You cannot go deeper than %d menu_level. sorry!", MAX_MENULEVEL);
+      ta_printf("$RED$You cannot go deeper than %d menu_level. sorry!", MAX_MENULEVEL);
       tb_present();
       return;
    }
@@ -268,7 +343,7 @@ void menu_history_pop(void) {
 }
 
 int menu_close(void) {
-   printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "Menu level %d closed!", menu_level);
+   ta_printf("$YELLOW$Menu level %d closed!", menu_level);
    tb_present();
 
    // remove one item from the end of menu_history...
@@ -278,22 +353,24 @@ int menu_close(void) {
 
 int menu_show(menu_t *menu) {
    if (menu_level >= MAX_MENULEVEL) {
-      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "You have reached the maximum menu depth allowed (%d), please use ESC to go back some!", MAX_MENULEVEL);
+      ta_printf("$RED$You have reached the maximum menu depth allowed (%d), please use ESC to go back some!", MAX_MENULEVEL);
       return -1;
    }
 
    tb_clear();
    redraw_screen();
-   y = 1;
 
    // Add the menu to the menu history 
    menu_history_push(menu, 0);
 
-   printf_tb(0, y++, TB_RED|TB_BOLD, 0, "Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
+   ta_printf("$RED$Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
    tb_present();
    return 0;
 }
 
+//////////////////////////////////////////
+// Handle termbox tty and resize events //
+//////////////////////////////////////////
 static void termbox_cb(EV_P_ ev_timer *w, int revents) {
    struct tb_event evt;		// termbox io events
    tb_poll_event(&evt);
@@ -312,8 +389,7 @@ static void resize_window(void) {
       dying = 1;
       exit(200);
    } else {
-      printf_tb(0, y, TB_GREEN|TB_BOLD, 0, "[display]");
-      printf_tb(10, y++, TB_WHITE|TB_BOLD, 0, "Resolution %dx%d is acceptable!", width, height);
+      ta_printf("$WHITE$[$GREEN$display$WHITE$] Resolution %dx%d is acceptable!", width, height);
    }
 
    line_textarea_top = 1;
@@ -330,7 +406,7 @@ static void resize_window(void) {
 static void process_input(struct tb_event *evt) {
    if (evt == NULL) {
       // XXX: log the error!
-      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "%s called with ev == NULL wtf?!", __FUNCTION__);
+      ta_printf("$RED$%s called with ev == NULL wtf?!", __FUNCTION__);
       tb_present();
       return;
    }
@@ -342,7 +418,7 @@ static void process_input(struct tb_event *evt) {
             menu_close();
          } else {
            menu_level = 0; // reset it to zero
-           printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "The menu is already closed!");
+           ta_printf("$YELLOW$The menu is already closed!");
          }
       } else if (evt->key == TB_KEY_TAB) {
         if (menu_level == 0) {		// only apply in main screen
@@ -352,13 +428,13 @@ static void process_input(struct tb_event *evt) {
               active_pane = 0;
         }
       } else if (evt->key == TB_KEY_ARROW_LEFT) { 			// left cursor
-         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "<");
+         ta_printf("$YELLOW$<");
       } else if (evt->key == TB_KEY_ARROW_RIGHT) {			// right cursor
-         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, ">");
+         ta_printf("$YELLOW$>");
       } else if (evt->key == TB_KEY_ARROW_UP) {			// up cursor
-         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "^");
+         ta_printf("$YELLOW$^");
       } else if (evt->key == TB_KEY_ARROW_DOWN) {			// down cursor
-         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "V");
+         ta_printf("$YELLOW$V");
       } else if (evt->key == TB_KEY_CTRL_B) {			// ^B
          if (menu_level == 0) {			// only if we're at main TUI screen (not in a menu)
             menu_show(&menu_bands);
@@ -377,24 +453,27 @@ static void process_input(struct tb_event *evt) {
          if (menu_level == 0) {
             toggle(&tx_enabled);
             redraw_screen();
-            printf_tb(0, y++, TB_RED|TB_BOLD, 0, "TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+            ta_printf("$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
          } else {
             // always disable if in a submenu, only allow activating TX from home screen
             tx_enabled = 0;
-            printf_tb(0, y++, TB_RED|TB_BOLD, 0, "TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+            ta_printf("$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
          }
       } else if (evt->key == TB_KEY_CTRL_X || evt->key == TB_KEY_CTRL_Q) {	// is it ^X or ^Q? If so exit
-         printf_tb(0, y++, TB_RED, 0, "Goodbye! Hope you had a nice visit!");
+         ta_printf("$RED$Goodbye! Hope you had a nice visit!");
          fini();
          return;
       } else {      					// Nope - display the event data for debugging
-         printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
+         ta_printf("$RED$unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
       }
    } else if (evt->type == TB_EVENT_RESIZE) {
-      // deal with window resizes (redraw everything)
+      // change the stored dimensions/layout variables above
       resize_window();
-      x = 0, y = 0;
+
+      // clear the screen buffer
       tb_clear();
+
+      // redraw the various sections of the screen
       redraw_screen();
    } else if (evt->type == TB_EVENT_MOUSE) {
       // handle mouse interactions
@@ -404,12 +483,17 @@ static void process_input(struct tb_event *evt) {
 
 static void fini(void) {
    // Tear down to exit
-   tb_clear();
-   printf_tb(0, 0, TB_RED|TB_BOLD, 0, "ft8goblin exiting, please wait for subpprocesses to halt...");
-   tb_present();
    dying = 1;
 
+   // display a notice that we are exiting and to be patient...
+   tb_clear();
+   ta_printf("$RED$ft8goblin exiting, please wait for subpprocesses to halt...");
+   tb_present();
+
+   // stop libev stuff...
    // libev_shutdown();
+
+   // send SIGTERM then SIGKILL to subprocesses...
    subproc_shutdown();
 
    // shut down termbox
@@ -418,7 +502,6 @@ static void fini(void) {
    printf("ft8goblin exited cleanly!\n");
    exit(0);
 }
-
 
 int main(int argc, char **argv) {
    int fd_tb_tty = -1, fd_tb_resize = -1;
@@ -442,8 +525,7 @@ int main(int argc, char **argv) {
    // Initialize termbox
    tb_init();
    resize_window();
-   y = 1;
-   printf_tb(0, y++, TB_CYAN|TB_BOLD, 0, "Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
+   ta_printf("$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
 
    /////////////////////////////////
    // Setup the scrollback buffer //
@@ -469,7 +551,7 @@ int main(int argc, char **argv) {
    if (fd_tb_tty >= 2 && fd_tb_resize >= 2) {
       // add to libev set
    } else {
-      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
+      ta_printf("$RED$tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
       tb_present();
       exit(200);
    }
@@ -516,7 +598,7 @@ int view_config(void) {
 }
 
 void halt_tx_now(void) {
-   printf_tb(0, y++, TB_RED|TB_BOLD, 0, "Halting TX!");
+   ta_printf("$RED$Halting TX!");
    redraw_screen();
    tb_present();
 }

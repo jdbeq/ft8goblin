@@ -19,7 +19,7 @@ static subproc_t *children[MAX_SUBPROC];
 
 static void subproc_delete(int i) {
    if (children[i] == NULL) {
-      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "%s: invalid child process %i (NULL) requested for deletion", __FUNCTION__, i);
+      ta_printf("$RED$%s: invalid child process %i (NULL) requested for deletion", __FUNCTION__, i);
       return;
    }
 
@@ -46,14 +46,14 @@ int subproc_killall(int signum) {
    }
 
    if (max_subprocess > MAX_SUBPROC) {
-      printf_tb(0, y++, TB_RED|TB_BOLD, 0, "%s: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", __FUNCTION__, max_subprocess, MAX_SUBPROC);
+      ta_printf("$RED$%s: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", __FUNCTION__, max_subprocess, MAX_SUBPROC);
       tb_present();
       exit(200);
    }
 
    int i = 0;
    for (i = 0; i < max_subprocess; i++) {
-      printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
+      ta_printf("$YELLOW$sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
       tb_present();
 
       // if successfully sent signal, increment rv, so we'll sleep if called from subproc_shutdown()
@@ -69,7 +69,7 @@ int subproc_killall(int signum) {
         continue;
       } else if (rv == 0) {
         // it didn't exit yet...
-//        printf_tb(0, y++, TB_YELLOW|TB_BOLD, 0, "-- no response, sleeping 3 seconds before next attempt...");
+//        ta_printf("$YELLOW$-- no response, sleeping 3 seconds before next attempt...");
 //        sleep(3);
         continue;
       } else {
@@ -86,8 +86,6 @@ int subproc_killall(int signum) {
 
 // Shut down subprocesses and throw a message to the console to let the operator know what's happening
 void subproc_shutdown(void) {
-   y = 1;
-
    if (subproc_killall(SIGTERM) > 0)
       sleep(2);
 
