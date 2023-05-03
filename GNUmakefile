@@ -83,8 +83,8 @@ ft8goblin_objs += ft8goblin.o
 ft8coder_objs += ft8lib.o
 
 # ft8decoder and ft8encoder processes
-ft8decoder_objs += decoder.o ${ft8coder_objs}
-ft8encoder_objs += encoder.o ${ft8coder_objs}
+ft8decoder_objs += ft8decoder.o ${ft8coder_objs}
+ft8encoder_objs += ft8encoder.o ${ft8coder_objs}
 
 ###########
 # sigcapd #
