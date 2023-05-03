@@ -108,7 +108,7 @@ static ColorPair parse_color_str(const char *str) {
 void ta_redraw(TextArea *ta) {
    // Find the end of the ring buffer
    // Start drawing from the bottom up
-   for (int i = ta->bottom; i--; i > ta->top) {
+   for (int i = ta->bottom; i > ta->top; i--) {
       // Draw the current line of the ring buffer
 
       // Is the previous line valid?
@@ -142,7 +142,7 @@ void ta_printf(TextArea *ta, const char *fmt, ...) {
        return;
 
     char buf[4096];
-    int bg = 0, fg = 0, my_y = 0, my_x = 0;
+    int bg = 0, fg = 0;
     va_list vl;
     va_start(vl, fmt);
 
@@ -313,6 +313,19 @@ void ui_shutdown(void) {
    exit(0);
 }
 
+void ta_destroy(TextArea *ta) {
+   if (ta == NULL) {
+      return;
+   }
+
+   if (ta->scrollback != NULL) {
+      rb_destroy(ta->scrollback);
+      ta->scrollback = NULL;
+   }
+
+   free(ta);
+}
+
 TextArea *ta_init(int scrollback_lines) {
    TextArea *ta = NULL;
 
@@ -331,6 +344,8 @@ TextArea *ta_init(int scrollback_lines) {
       printf("ui/scrollback-lines not set or unparsable in configuration. defaulting to %d", ta->scrollback_lines);
    }
    ta->scrollback = rb_create(ta->scrollback_lines);
+
+   return ta;
 }
 
 void ui_init(void) {

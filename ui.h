@@ -24,16 +24,18 @@ extern "C" {
    extern void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg);
    extern void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...);
 
-   // Handling of the TextArea
-   extern void ta_redraw(TextArea *ta);
-   extern int ta_append(TextArea *ta, const char *buf);
+   // Handling of the TextArea (roughly in order of lifecycle)
    TextArea *ta_init(int scrollback_lines);
+   extern int ta_append(TextArea *ta, const char *buf);
    extern void ta_printf(TextArea *ta, const char *fmt, ...);
+   extern void ta_redraw(TextArea *ta);
+   extern void ta_destroy(TextArea *ta);
 
    // ui functions
-   extern void ui_resize_window(void);
-   extern void ui_shutdown(void);
    extern void ui_init(void);
+   extern void ui_resize_window(void);
+   extern void redraw_screen(void);
+   extern void ui_shutdown(void);
 
    /////
    extern int scrollback_lines;	// this is set in main below...

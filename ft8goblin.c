@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
    mycall = cfg_get_str(cfg, "site/mycall");
    gridsquare = cfg_get_str(cfg, "site/gridsquare");
 
-   mainlog = log_open(cfg_get_str(cfg, "logging/ft8goblin-logpath"));
+   mainlog = log_open(dict_get(runtime_cfg, "logpath", "ft8goblin.log.txt"));
 
    ui_init();
    ui_resize_window();
