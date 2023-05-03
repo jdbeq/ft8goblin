@@ -11,7 +11,6 @@
 #include "config.h"
 
 yajl_val cfg = NULL;
-
 yajl_val parse_config(const char *cfgfile) {
     FILE *fp = NULL;
     unsigned char *data = NULL;
@@ -127,9 +126,9 @@ static char **cfg_mkpath(char *path, char **rpath) {
    }
 
    // zero out the array
-   memset(rpath, 0, sizeof(rpath));
+   memset(rpath, 0, sizeof(&rpath));
 
-   char *restrict rp = path;
+   char *rp = path;
    char *p = NULL;
    int ai = 0;
 

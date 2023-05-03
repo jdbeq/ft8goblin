@@ -6,25 +6,25 @@
  *	Menu		Multi-level menus, with history support, similar to WANG mainframes.
  *
  */
+#include <errno.h>
 #include <termbox2.h>
 #include "config.h"
 #include "ui.h"
+#include "subproc.h"
 
-int	scrollback_lines = -1;	// this is set in main below...
-int	active_band = 40;	// Which band are we TXing on?
-int	active_pane = 0;	// active pane (0: TextArea, 1: TX input)
+// main msg area
+TextArea *msgbox = NULL;
 
-int height = -1, width = -1;
-int line_textarea_top = -1,	// top of scrollable TextArea
-    line_textarea_bottom = -1;	// bottom of scrollable TextArea
-int line_status = -1;		// status line
-int line_input = -1;		// input field
-
-///////////////////////////////////
-// XXX: These belong in config.c //
-///////////////////////////////////
+// XXX: These should all go into a ConfigData struct
 const char *mycall = NULL;	// cfg:ui/mycall
 const char *gridsquare = NULL;	// cfg:ui/gridsquare
+
+////////////////
+int	line_status = -1;		// status line
+int 	line_input = -1;		// input field
+int	height = -1, width = -1;
+int	active_band = 40;		// Which band are we TXing on?
+int	active_pane = 1;		// active pane (0: TextArea, 1: TX input)
 
 ////////////////////////////////////////////////////////////
 // These let us print unicode to an exact screen location //
@@ -105,10 +105,10 @@ static ColorPair parse_color_str(const char *str) {
 //////////////////////////////////////////////
 // Redraw the TextArea from the ring buffer //
 //////////////////////////////////////////////
-void ta_redraw(void) {
+void ta_redraw(TextArea *ta) {
    // Find the end of the ring buffer
    // Start drawing from the bottom up
-   for (int i = line_textarea_bottom; i--; i > line_textarea_top) {
+   for (int i = ta->bottom; i--; i > ta->top) {
       // Draw the current line of the ring buffer
 
       // Is the previous line valid?
@@ -121,17 +121,26 @@ void ta_redraw(void) {
 //////////////////////////////////////////
 // Append to the end of the ring buffer //
 //////////////////////////////////////////
-int ta_append(const char *buf) {
+int ta_append(TextArea *ta, const char *buf) {
    int rv = 0;
 
-   // Find end of ring buffer (last timestamp)
-   // Replace the NEXT entry in ring buffer with our buffer
+   if (ta == NULL || buf == NULL) {
+      return -1;
+   }
+
+   char *bp = strdup(buf);
+
+   // set needs_freed to ensure it gets freed automatically...
+   rb_add(ta->scrollback, bp, true);
    return rv;
 }
 ///////////////////////////
 // Print to the TextArea //
 ///////////////////////////
-void ta_printf(const char *fmt, ...) {
+void ta_printf(TextArea *ta, const char *fmt, ...) {
+    if (ta == NULL || fmt == NULL)
+       return;
+
     char buf[4096];
     int bg = 0, fg = 0, my_y = 0, my_x = 0;
     va_list vl;
@@ -139,7 +148,8 @@ void ta_printf(const char *fmt, ...) {
 
     vsnprintf(buf, sizeof(buf), fmt, vl);
     va_end(vl);
-    ta_append(buf);
+    // we need to duplicate this and ensure it gets free()'d when bumped out of the ringbuffer...
+//    ta_append(ta, buf);
 //    print_tb(buf, my_x, my_y, fg, bg);
 }
 
@@ -252,8 +262,7 @@ static void print_input(void) {
 
 void redraw_screen(void) {
    print_help();
-   // XXX: do this
-   ta_redraw();
+   ta_redraw(msgbox);
    print_input();
    print_status();
    tb_present();
@@ -271,14 +280,15 @@ void ui_resize_window(void) {
       dying = 1;
       exit(200);
    } else {
-      ta_printf("$WHITE$[$GREEN$display$WHITE$] Resolution %dx%d is acceptable!", width, height);
+      ta_printf(msgbox, "$WHITE$[$GREEN$display$WHITE$] Resolution %dx%d is acceptable!", width, height);
    }
 
-   line_textarea_top = 1;
-   line_textarea_bottom = height - 3;
+// XXX: Need a way to call this automatically for all TextAreas?
+   msgbox->top = 1;
+   msgbox->bottom = height - 3;
+
    line_status = height - 1;
    line_input = height - 2;
-   scrollback_lines = tb_height() * 5;
 }
 
 void ui_shutdown(void) {
@@ -287,7 +297,7 @@ void ui_shutdown(void) {
 
    // display a notice that we are exiting and to be patient...
    tb_clear();
-   ta_printf("$RED$ft8goblin exiting, please wait for subpprocesses to halt...");
+   ta_printf(msgbox, "$RED$ft8goblin exiting, please wait for subpprocesses to halt...");
    tb_present();
 
    // stop libev stuff...
@@ -303,14 +313,27 @@ void ui_shutdown(void) {
    exit(0);
 }
 
-int ui_textarea_init() {
+TextArea *ta_init(int scrollback_lines) {
+   TextArea *ta = NULL;
+
+   if ((ta = malloc(sizeof(TextArea))) == NULL) {
+      fprintf(stderr, "ui_textarea_init: out of memory!\n");
+      exit(ENOMEM);
+   }
+
    /////////////////////////////////
    // Setup the scrollback buffer //
    /////////////////////////////////
-   scrollback_lines = cfg_get_int(cfg, "ui/scrollback-lines");
+   ta->scrollback_lines = scrollback_lines;
 
-   if (scrollback_lines == -1) {
-      scrollback_lines = tb_height() * 5;
-      printf("ui/scrollback-lines not set or unparsable in configuration. defaulting to %d", scrollback_lines);
+   if (ta->scrollback_lines == -1) {
+      ta->scrollback_lines = tb_height() * 5;
+      printf("ui/scrollback-lines not set or unparsable in configuration. defaulting to %d", ta->scrollback_lines);
    }
+   ta->scrollback = rb_create(ta->scrollback_lines);
+}
+
+void ui_init(void) {
+   tb_init();
+   msgbox = ta_init(cfg_get_int(cfg, "ui/scrollback-lines"));
 }

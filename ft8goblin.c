@@ -8,6 +8,9 @@
 #include "util.h"
 #include <termbox2.h>
 #include "ui.h"
+#include "logger.h"
+
+char *progname = "ft8goblin";
 
 /////////////////////////////////////////
 int	dying = 0;		// Are we shutting down?
@@ -31,16 +34,12 @@ int main(int argc, char **argv) {
    mycall = cfg_get_str(cfg, "site/mycall");
    gridsquare = cfg_get_str(cfg, "site/gridsquare");
 
-   ///////////////////////////
-   // Perform startup tasks //
-   ///////////////////////////
+   log = log_open(cfg_get_str(cfg, "logging/ui-logpath"));
 
-   // Initialize the TUI...
-   tb_init();
+   ui_init();
    ui_resize_window();
    ui_io_watcher_init();
-   ui_textarea_init();
-   ta_printf("$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
+   ta_printf(msgbox, "$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
    redraw_screen();
 
    // Initialize the GNIS place names database
@@ -81,7 +80,7 @@ int view_config(void) {
 }
 
 void halt_tx_now(void) {
-   ta_printf("$RED$Halting TX!");
+   ta_printf(msgbox, "$RED$Halting TX!");
    redraw_screen();
    tb_present();
 }

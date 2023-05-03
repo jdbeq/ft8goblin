@@ -12,7 +12,7 @@ static ev_io termbox_watcher, termbox_resize_watcher;
 void process_input(struct tb_event *evt) {
    if (evt == NULL) {
       // XXX: log the error!
-      ta_printf("$RED$%s called with ev == NULL wtf?!", __FUNCTION__);
+      ta_printf(msgbox, "$RED$%s called with ev == NULL wtf?!", __FUNCTION__);
       tb_present();
       return;
    }
@@ -24,7 +24,7 @@ void process_input(struct tb_event *evt) {
             menu_close();
          } else {
            menu_level = 0; // reset it to zero
-           ta_printf("$YELLOW$The menu is already closed!");
+           ta_printf(msgbox, "$YELLOW$The menu is already closed!");
          }
       } else if (evt->key == TB_KEY_TAB) {
         if (menu_level == 0) {		// only apply in main screen
@@ -34,13 +34,13 @@ void process_input(struct tb_event *evt) {
               active_pane = 0;
         }
       } else if (evt->key == TB_KEY_ARROW_LEFT) { 			// left cursor
-         ta_printf("$YELLOW$<");
+         ta_printf(msgbox, "$YELLOW$<");
       } else if (evt->key == TB_KEY_ARROW_RIGHT) {			// right cursor
-         ta_printf("$YELLOW$>");
+         ta_printf(msgbox, "$YELLOW$>");
       } else if (evt->key == TB_KEY_ARROW_UP) {			// up cursor
-         ta_printf("$YELLOW$^");
+         ta_printf(msgbox, "$YELLOW$^");
       } else if (evt->key == TB_KEY_ARROW_DOWN) {			// down cursor
-         ta_printf("$YELLOW$V");
+         ta_printf(msgbox, "$YELLOW$V");
       } else if (evt->key == TB_KEY_CTRL_B) {			// ^B
          if (menu_level == 0) {			// only if we're at main TUI screen (not in a menu)
             menu_show(&menu_bands, 0);
@@ -59,18 +59,18 @@ void process_input(struct tb_event *evt) {
          if (menu_level == 0) {
             toggle(&tx_enabled);
             redraw_screen();
-            ta_printf("$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+            ta_printf(msgbox, "$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
          } else {
             // always disable if in a submenu, only allow activating TX from home screen
             tx_enabled = 0;
-            ta_printf("$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+            ta_printf(msgbox, "$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
          }
       } else if (evt->key == TB_KEY_CTRL_X || evt->key == TB_KEY_CTRL_Q) {	// is it ^X or ^Q? If so exit
-         ta_printf("$RED$Goodbye! Hope you had a nice visit!");
+         ta_printf(msgbox, "$RED$Goodbye! Hope you had a nice visit!");
          ui_shutdown();
          return;
       } else {      					// Nope - display the event data for debugging
-         ta_printf("$RED$unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
+         ta_printf(msgbox, "$RED$unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
       }
    } else if (evt->type == TB_EVENT_RESIZE) {
       // change the stored dimensions/layout variables above
@@ -110,7 +110,7 @@ int ui_io_watcher_init(void) {
    if (fd_tb_tty >= 2 && fd_tb_resize >= 2) {
       // add to libev set
    } else {
-      ta_printf("$RED$tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
+      ta_printf(msgbox, "$RED$tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
       tb_present();
       exit(200);
    }

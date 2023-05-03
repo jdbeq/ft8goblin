@@ -10,6 +10,12 @@
 
 rb_buffer_t *rb_create(int max_size) {
     rb_buffer_t *buffer = malloc(sizeof(rb_buffer_t));
+
+    if (buffer == NULL) {
+       fprintf(stderr, "rb_create: out of memory!\n");
+       exit(ENOMEM);
+    }
+
     buffer->head = NULL;
     buffer->tail = NULL;
     buffer->max_size = max_size;
@@ -21,25 +27,36 @@ void rb_destroy(rb_buffer_t *buffer) {
     rb_node_t *current = buffer->head;
     while (current != NULL) {
         rb_node_t *next = current->next;
+
+        if (current->needs_freed && current->data != NULL)
+           free(current->data);
+
         free(current);
         current = next;
     }
     free(buffer);
 }
 
-void rb_add(rb_buffer_t *buffer, void *data) {
+int rb_add(rb_buffer_t *buffer, void *data, int needs_freed) {
     struct timespec timestamp;
     clock_gettime(CLOCK_MONOTONIC, &timestamp);
+
     rb_node_t *node = malloc(sizeof(rb_node_t));
+    
+    if (node == NULL) {
+       fprintf(stderr, "rb_add: out of memory!\n");
+       exit(ENOMEM);
+    }
     node->data = data;
     node->timestamp = timestamp;
     node->next = NULL;
+    node->needs_freed = needs_freed;
 
     if (buffer->current_size == 0) {
         buffer->head = node;
         buffer->tail = node;
         buffer->current_size++;
-        return;
+        return 0;
     }
     if (buffer->current_size == buffer->max_size) {
         rb_node_t *next_head = buffer->head->next;
@@ -48,13 +65,16 @@ void rb_add(rb_buffer_t *buffer, void *data) {
         buffer->current_size--;
     }
 
+    // set ourselves onto the end of the list
     buffer->tail->next = node;
+
+    // we are now the tail of the list
     buffer->tail = node;
     buffer->current_size++;
+    return 0;
 }
 
 void *rb_get_most_recent(rb_buffer_t *buffer) {
-
     if (buffer->current_size == 0) {
         printf("Ring buffer is empty.\n");
         return NULL;
@@ -87,7 +107,14 @@ void *rb_get_range(rb_buffer_t *buffer, int start, int count) {
         printf("Invalid count.\n");
         return NULL;
     }
+
     void **array = malloc(count  *sizeof(void*));
+
+    if ((void *)array == NULL) {
+       fprintf(stderr, "rb_get_range: out of memory!\n");
+       exit(ENOMEM);
+    }
+
     rb_node_t *current = buffer->head;
 
     int i = 0;

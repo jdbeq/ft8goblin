@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include "config.h"
 
+int dying = 0;
+char *progname = "ft8encoder";
+
 void exit_fix_config(void) {
    printf("Please edit your config.json and try again!\n");
    exit(255);

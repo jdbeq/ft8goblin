@@ -34,6 +34,9 @@ sigcapd
 watchlist.txt
 config.json
 
+# log files
+*.log
+
 # Databases that are large and can be dealt with by the builder...
 fcc_uls/fcc_uls.db
 fcc_uls/download/*

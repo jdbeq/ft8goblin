@@ -1,3 +1,4 @@
+#include <errno.h>
 #include "config.h"
 #include "util.h"
 #include "ui.h"
@@ -46,7 +47,7 @@ int menu_history_clear(void) {
 
 void menu_history_push(menu_t *menu, int item) {
    if (menu_level >= MAX_MENULEVEL) {
-      ta_printf("$RED$You cannot go deeper than %d menu_level. sorry!", MAX_MENULEVEL);
+      ta_printf(msgbox, "$RED$You cannot go deeper than %d menu_level. sorry!", MAX_MENULEVEL);
       tb_present();
       return;
    }
@@ -69,7 +70,7 @@ void menu_history_pop(void) {
 }
 
 int menu_close(void) {
-   ta_printf("$YELLOW$Menu level %d closed!", menu_level);
+   ta_printf(msgbox, "$YELLOW$Menu level %d closed!", menu_level);
    tb_present();
 
    // remove one item from the end of menu_history...
@@ -100,7 +101,7 @@ int menu_render_item(menu_window_t *mp, menu_t *menu, int menu_item) {
 // Display a menu, optionally defaulting the cursor to a specific item (for history)
 int menu_show(menu_t *menu, int item) {
    if (menu_level >= MAX_MENULEVEL) {
-      ta_printf("$RED$You have reached the maximum menu depth allowed (%d), please use ESC to go back some!", MAX_MENULEVEL);
+      ta_printf(msgbox, "$RED$You have reached the maximum menu depth allowed (%d), please use ESC to go back some!", MAX_MENULEVEL);
       return -1;
    }
 
@@ -110,11 +111,11 @@ int menu_show(menu_t *menu, int item) {
    // Add the menu to the menu history 
    menu_history_push(menu, 0);
 
-   ta_printf("$RED$Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
+   ta_printf(msgbox, "$RED$Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
 
    menu_item_t *ip = menu->menu_items;
    if (ip == NULL) {
-      ta_printf("$RED$Invalid menu data, items pointer is NULL");
+      ta_printf(msgbox, "$RED$Invalid menu data, items pointer is NULL");
       return -1;
    }
 

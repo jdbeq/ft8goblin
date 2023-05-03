@@ -40,6 +40,7 @@ common_objs += config.o
 common_objs += ipc.o
 common_objs += util.o
 common_objs += ringbuffer.o
+common_objs += logger.o
 
 ####################
 # RUI: rustyaxe UI #
