@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include "menu.h"
+#include "ui-menu.h"
+#include "ui-input.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,6 +17,8 @@ extern "C" {
    extern void ta_redraw(void);
    extern int ta_append(const char *buf);
    extern void ta_printf(const char *fmt, ...);
+   extern void ui_resize_window(void);
+   extern void ui_shutdown(void);
 
    /////
    extern int	scrollback_lines;	// this is set in main below...

@@ -14,12 +14,8 @@
 #include "config.h"
 #include "subproc.h"
 #include "util.h"
-#include "termbox2/termbox2.h"
+#include <termbox2.h>
 #include "ui.h"
-
-// forward prototypes
-static void fini(void);
-static void process_input(struct tb_event *evt);
 
 /////////////////////////////////////////
 int	dying = 0;		// Are we shutting down?
@@ -33,6 +29,10 @@ int line_textarea_top = -1,	// top of scrollable TextArea
     line_textarea_bottom = -1;	// bottom of scrollable TextArea
 int line_status = -1;		// status line
 int line_input = -1;		// input field
+
+///////////////////////////////////
+// XXX: These belong in config.c //
+///////////////////////////////////
 const char *mycall = NULL;	// cfg:ui/mycall
 const char *gridsquare = NULL;	// cfg:ui/gridsquare
 
@@ -283,7 +283,7 @@ static void termbox_cb(EV_P_ ev_timer *w, int revents) {
    process_input(&evt);
 }
 
-static void resize_window(void) {
+void ui_resize_window(void) {
    height = tb_height();
    width = tb_width();
 
@@ -305,89 +305,7 @@ static void resize_window(void) {
    scrollback_lines = tb_height() * 5;
 }
 
-//
-// Keyboard/mouse input handler
-//   
-
-static void process_input(struct tb_event *evt) {
-   if (evt == NULL) {
-      // XXX: log the error!
-      ta_printf("$RED$%s called with ev == NULL wtf?!", __FUNCTION__);
-      tb_present();
-      return;
-   }
-
-   if (evt->type == TB_EVENT_KEY) {
-      // Is the key a valid command?
-      if (evt->key == TB_KEY_ESC) {
-         if (menu_level > 0) {
-            menu_close();
-         } else {
-           menu_level = 0; // reset it to zero
-           ta_printf("$YELLOW$The menu is already closed!");
-         }
-      } else if (evt->key == TB_KEY_TAB) {
-        if (menu_level == 0) {		// only apply in main screen
-           if (active_pane == 0)
-              active_pane = 1;
-           else
-              active_pane = 0;
-        }
-      } else if (evt->key == TB_KEY_ARROW_LEFT) { 			// left cursor
-         ta_printf("$YELLOW$<");
-      } else if (evt->key == TB_KEY_ARROW_RIGHT) {			// right cursor
-         ta_printf("$YELLOW$>");
-      } else if (evt->key == TB_KEY_ARROW_UP) {			// up cursor
-         ta_printf("$YELLOW$^");
-      } else if (evt->key == TB_KEY_ARROW_DOWN) {			// down cursor
-         ta_printf("$YELLOW$V");
-      } else if (evt->key == TB_KEY_CTRL_B) {			// ^B
-         if (menu_level == 0) {			// only if we're at main TUI screen (not in a menu)
-            menu_show(&menu_bands);
-         }
-      } else if (evt->key == TB_KEY_CTRL_H) {			// ^H
-         tx_enabled = 0;
-         halt_tx_now();
-      } else if (evt->key == TB_KEY_CTRL_M) { 			// Is it ^M?
-         if (menu_level == 0) {
-            menu_history_clear();
-            menu_show(&menu_main);
-         } else {
-            // pass ^M through
-         }
-      } else if (evt->key == TB_KEY_CTRL_T) {		// ^T
-         if (menu_level == 0) {
-            toggle(&tx_enabled);
-            redraw_screen();
-            ta_printf("$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
-         } else {
-            // always disable if in a submenu, only allow activating TX from home screen
-            tx_enabled = 0;
-            ta_printf("$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
-         }
-      } else if (evt->key == TB_KEY_CTRL_X || evt->key == TB_KEY_CTRL_Q) {	// is it ^X or ^Q? If so exit
-         ta_printf("$RED$Goodbye! Hope you had a nice visit!");
-         fini();
-         return;
-      } else {      					// Nope - display the event data for debugging
-         ta_printf("$RED$unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
-      }
-   } else if (evt->type == TB_EVENT_RESIZE) {
-      // change the stored dimensions/layout variables above
-      resize_window();
-
-      // clear the screen buffer
-      tb_clear();
-
-      // redraw the various sections of the screen
-      redraw_screen();
-   } else if (evt->type == TB_EVENT_MOUSE) {
-      // handle mouse interactions
-   }
-   tb_present();
-}
-
-static void fini(void) {
+void ui_shutdown(void) {
    // Tear down to exit
    dying = 1;
 
@@ -430,7 +348,7 @@ int main(int argc, char **argv) {
 
    // Initialize termbox
    tb_init();
-   resize_window();
+   ui_resize_window();
    ta_printf("$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
 
    /////////////////////////////////
@@ -491,7 +409,7 @@ int main(int argc, char **argv) {
       dying = 1;
    }
 
-   fini();
+   ui_shutdown();
    return 0;
 }
 

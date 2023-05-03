@@ -10,7 +10,10 @@ bin_install_path := ${PREFIX}/bin
 etc_install_path ?= /etc/ft8goblin
 lib_install_path := ${PREFIX}/lib
 # required libraries (-l${x} will be expanded later)
-libs += ncurses yajl ft8 ev termbox2 uhd rtlsdr
+common_libs += yajl ev termbox2 uhd rtlsdr
+ft8goblin_libs += ncurses
+ft8decoder_libs += ft8
+sigcapd_libs += uhd rtlsdr
 
 ifeq (${PULSEAUDIO},y)
 libs += pulse
@@ -19,8 +22,11 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-CFLAGS := -O2 -ggdb -I./ft8_lib -Wall
-LDFLAGS := $(foreach x,${libs},-l${x})
+CFLAGS += -O2 -ggdb -I./ft8_lib -Wall
+LDFLAGS += $(foreach x,${common_libs},-l${x})
+ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
+ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})
+sigcapd_ldflags := ${LDFLAGS} $(foreach x,${sigcapd_libs},-l${x})
 subdirs += ft8_lib termbox2
 
 ##################
@@ -29,6 +35,7 @@ subdirs += ft8_lib termbox2
 common_objs += config.o
 common_objs += ipc.o
 common_objs += util.o
+common_objs += ringbuffer.o
 
 ###########
 # FT8 TUI #
@@ -36,8 +43,8 @@ common_objs += util.o
 # SQL utilities (sqlite3 / postgis wrapper)
 ft8goblin_objs += sql.o
 
-# ncurses user interface
-ft8goblin_objs += ui.o
+# tty user interface
+ft8goblin_objs += ui.o ui-input.o ui-menu.o
 
 # watch lists / alerts
 ft8goblin_objs += watch.o
@@ -60,14 +67,12 @@ ft8goblin_objs += subproc.o
 ###################
 # FT8 De/En-coder #
 ###################
-
 # interface to the FT8 library
 ft8coder_objs += ft8lib.o
 
-
+# ft8decoder and ft8encoder processes
 ft8decoder_objs += decoder.o ${ft8coder_objs}
 ft8encoder_objs += encoder.o ${ft8coder_objs}
-
 
 ###########
 # sigcapd #
@@ -135,13 +140,13 @@ subdirs-world:
 	@for i in ${subdirs}; do ${MAKE} -C $$i ; done
 
 ft8goblin: ${ft8goblin_real_objs}
-	${CC} -o $@ $^ ${LDFLAGS} 
+	${CC} -o $@ $^ ${ft8goblin_ldflags} 
 
 ft8decoder: ${ft8decoder_real_objs}
-	${CC} -o $@ $^ ${LDFLAGS}
+	${CC} -o $@ $^ ${ft8coder_ldflags}
 
 ft8encoder: ${ft8encoder_real_objs}
-	${CC} -o $@ $^ ${LDFLAGS}
+	${CC} -o $@ $^ ${ft8coder_ldflags}
 
 obj/%.o: %.c
 	@echo "[CC] $< -> $@"
