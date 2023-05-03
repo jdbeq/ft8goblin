@@ -59,7 +59,8 @@ int log_send_va(LogHndl *log, int level, const char *msg, va_list ap) {
    memset(datebuf, 0, sizeof(datebuf));
    strftime(datebuf, sizeof(datebuf) - 1, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
-   max = LogLevel(cfg_get_str(cfg, "logging/ui-loglevel"));
+   // XXX: taco
+   max = LogLevel(dict_get(runtime_cfg, "logging/ft8goblin-loglevel", "notice"));
 
    if (max < level)
       return -1;

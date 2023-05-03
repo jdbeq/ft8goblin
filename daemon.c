@@ -19,10 +19,10 @@ extern char *progname;
 int daemonize(void) {
    struct stat sb;
 
-   pidfile = dict_get(runtime_cfg, "core.pidfile", NULL);
+   pidfile = dict_get(runtime_cfg, "pidfile", NULL);
 
    if (pidfile == NULL) {
-      fprintf(stderr, "no pidfile specified in runtime:core.pidfile\n");
+      fprintf(stderr, "no pidfile specified in runtime:pidfile\n");
       exit(255);
    }
 
@@ -32,7 +32,7 @@ int daemonize(void) {
    }
 
    // are we configured to daemonize?
-   if (dict_get_bool(runtime_cfg, "core.daemonize", false)) {
+   if (dict_get_bool(runtime_cfg, "daemonize", false)) {
       printf("going to the background...\n");
       pid_t pid = fork();
 
@@ -76,7 +76,7 @@ int daemonize(void) {
    write(pidfd, buf, strlen(buf));
 
    // only close stdio if daemonizing
-   if (dict_get_bool(runtime_cfg, "core.daemonize", false)) {
+   if (dict_get_bool(runtime_cfg, "daemonize", false)) {
       // close stdio
       close(STDIN_FILENO);
       close(STDOUT_FILENO);

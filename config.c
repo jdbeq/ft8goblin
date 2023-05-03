@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+extern char *progname;
 yajl_val cfg = NULL;
 dict *runtime_cfg = NULL;
 
@@ -114,6 +115,42 @@ yajl_val load_config(void) {
 
    if (runtime_cfg == NULL) {
       runtime_cfg = dict_new();
+
+      char buf[4096];
+      // find the logpath...
+      memset(buf, 0, 4096);
+      snprintf(buf, 4095, "logging/%s-logpath", progname);
+      char *bp = cfg_get_str(cfg, buf);
+
+      if (bp != NULL) {
+         dict_add(runtime_cfg, "loglevel", bp);
+      } else {
+         dict_add(runtime_cfg, "loglevel", "notice");
+      }
+
+      // repeat for pidfile...
+      memset(buf, 0, 4096);
+      snprintf(buf, 4095, "logging/%s-pidfile", progname);
+      *bp = cfg_get_str(cfg, buf);
+
+      if (bp != NULL) {
+         dict_add(runtime_cfg, "pidfile", bp);
+      } else {
+         memset(buf, 0, 4096);
+         snprintf(buf, 4095, "%s.pid", progname);
+         dict_add(runtime_cfg, "pidfile", bp);
+      }
+
+      // repeat for daemonize flag...
+      memset(buf, 0, 4096);
+      snprintf(buf, 4095, "logging/%s-logpath", progname);
+      *bp = cfg_get_str(cfg, buf);
+
+      if (bp != NULL) {
+         dict_add(runtime_cfg, "daemonize", bp);
+      } else {
+         dict_add(runtime_cfg, "daemonize", "false");
+      }
    }
 
    // nope, return error

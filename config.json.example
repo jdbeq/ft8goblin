@@ -26,8 +26,8 @@
       "log-crashed-decoders": "true",
       "sigcapd-loglevel": "warning",
       "sigcapd-logpath": "file://sigcapd.log",
-      "ui-loglevel": "error",
-      "ui-logpath": "file://ft8goblin.log"
+      "ft8goblin-loglevel": "error",
+      "ft8goblin-logpath": "file://ft8goblin.log"
    },
    "site": {
       "mycall": "N0CALL",
