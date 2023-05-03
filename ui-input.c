@@ -2,8 +2,12 @@
 // Keyboard/mouse input handler
 //   
 #include <termbox2.h>
+#include <ev.h>
 #include "config.h"
 #include "ui.h"
+#include "util.h"
+
+static ev_io termbox_watcher, termbox_resize_watcher;
 
 void process_input(struct tb_event *evt) {
    if (evt == NULL) {
@@ -39,7 +43,7 @@ void process_input(struct tb_event *evt) {
          ta_printf("$YELLOW$V");
       } else if (evt->key == TB_KEY_CTRL_B) {			// ^B
          if (menu_level == 0) {			// only if we're at main TUI screen (not in a menu)
-            menu_show(&menu_bands);
+            menu_show(&menu_bands, 0);
          }
       } else if (evt->key == TB_KEY_CTRL_H) {			// ^H
          tx_enabled = 0;
@@ -47,7 +51,7 @@ void process_input(struct tb_event *evt) {
       } else if (evt->key == TB_KEY_CTRL_M) { 			// Is it ^M?
          if (menu_level == 0) {
             menu_history_clear();
-            menu_show(&menu_main);
+            menu_show(&menu_main, 0);
          } else {
             // pass ^M through
          }
@@ -81,4 +85,41 @@ void process_input(struct tb_event *evt) {
       // handle mouse interactions
    }
    tb_present();
+}
+
+//////////////////////////////////////////
+// Handle termbox tty and resize events //
+//////////////////////////////////////////
+static void termbox_cb(EV_P_ ev_timer *w, int revents) {
+   struct tb_event evt;		// termbox io events
+   tb_poll_event(&evt);
+   process_input(&evt);
+}
+
+int ui_io_watcher_init(void) {
+   struct ev_loop *loop = EV_DEFAULT;
+   int rv = 0;
+   int fd_tb_tty = -1, fd_tb_resize = -1;
+
+   ///////////////////////////////////////////
+   // Setup libev to handle termbox2 events //
+   ///////////////////////////////////////////
+   tb_get_fds(&fd_tb_tty, &fd_tb_resize);
+
+   // stdio occupy 0-2 (stdin, stdout, stderr)
+   if (fd_tb_tty >= 2 && fd_tb_resize >= 2) {
+      // add to libev set
+   } else {
+      ta_printf("$RED$tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
+      tb_present();
+      exit(200);
+   }
+
+   // XXX: error checking!
+   ev_io_init(&termbox_watcher, termbox_cb, fd_tb_tty, EV_READ);
+   ev_io_init(&termbox_resize_watcher, termbox_cb, fd_tb_resize, EV_READ);
+   ev_io_start(loop, &termbox_watcher);
+   ev_io_start(loop, &termbox_resize_watcher);
+
+   return rv;
 }

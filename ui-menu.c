@@ -77,7 +77,28 @@ int menu_close(void) {
    return 0;
 }
 
-int menu_show(menu_t *menu) {
+menu_window_t *menu_render_box(menu_t *menu, int menu_entries) {
+    menu_window_t *wp = NULL;
+
+    if ((wp = malloc(sizeof(menu_window_t))) == NULL) {
+       fprintf(stderr, "Failed allocating memory for menu_render_box");
+       exit(250);
+    }
+
+    wp->name = menu->menu_name;
+    wp->title = menu->menu_title;
+    wp->x = 0;
+    wp->y = 0;
+
+    return wp;
+}
+
+int menu_render_item(menu_window_t *mp, menu_t *menu, int menu_item) {
+    return 0;
+}
+
+// Display a menu, optionally defaulting the cursor to a specific item (for history)
+int menu_show(menu_t *menu, int item) {
    if (menu_level >= MAX_MENULEVEL) {
       ta_printf("$RED$You have reached the maximum menu depth allowed (%d), please use ESC to go back some!", MAX_MENULEVEL);
       return -1;
@@ -90,6 +111,23 @@ int menu_show(menu_t *menu) {
    menu_history_push(menu, 0);
 
    ta_printf("$RED$Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
+
+   menu_item_t *ip = menu->menu_items;
+   if (ip == NULL) {
+      ta_printf("$RED$Invalid menu data, items pointer is NULL");
+      return -1;
+   }
+
+   size_t mi_entries = (sizeof(ip) / sizeof(menu_item_t));
+
+   // render the outer dialog, with space for mi_entries or scrollbars
+   menu_window_t *mp = menu_render_box(menu, mi_entries);
+
+   // render each menu item into the menu
+   for (size_t i = 0; i < mi_entries; i++) {
+      menu_item_render(mp, menu, i);
+   }
+
    tb_present();
    return 0;
 }

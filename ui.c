@@ -6,20 +6,10 @@
  *	Menu		Multi-level menus, with history support, similar to WANG mainframes.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <ev.h>
-#include <evutil.h>
-#include "config.h"
-#include "subproc.h"
-#include "util.h"
 #include <termbox2.h>
+#include "config.h"
 #include "ui.h"
 
-/////////////////////////////////////////
-int	dying = 0;		// Are we shutting down?
-int	tx_enabled = 0;		// Master toggle to TX mode.
 int	scrollback_lines = -1;	// this is set in main below...
 int	active_band = 40;	// Which band are we TXing on?
 int	active_pane = 0;	// active pane (0: TextArea, 1: TX input)
@@ -154,11 +144,6 @@ void ta_printf(const char *fmt, ...) {
 }
 
 ///////////////////////////////////////////////////////
-static void exit_fix_config(void) {
-   printf("Please edit your config.json and try again!\n");
-   exit(255);
-}
-
 static void print_help(void) {
    int offset = 0;
    printf_tb(offset, 0, TB_GREEN|TB_BOLD, 0, "*Keys* ");
@@ -274,15 +259,6 @@ void redraw_screen(void) {
    tb_present();
 }
 
-//////////////////////////////////////////
-// Handle termbox tty and resize events //
-//////////////////////////////////////////
-static void termbox_cb(EV_P_ ev_timer *w, int revents) {
-   struct tb_event evt;		// termbox io events
-   tb_poll_event(&evt);
-   process_input(&evt);
-}
-
 void ui_resize_window(void) {
    height = tb_height();
    width = tb_width();
@@ -327,30 +303,7 @@ void ui_shutdown(void) {
    exit(0);
 }
 
-int main(int argc, char **argv) {
-   int fd_tb_tty = -1, fd_tb_resize = -1;
-   ev_io termbox_watcher, termbox_resize_watcher;
-   struct ev_loop *loop = EV_DEFAULT;
-
-   // print this even though noone will see it, except in case of error exit ;)
-   printf("ft8goblin: A console based ft8 client with support for multiband operation\n\n");
-
-   // This can't work without a valid configuration...
-   if (!(cfg = load_config()))
-      exit_fix_config();
-
-   mycall = cfg_get_str(cfg, "site/mycall");
-   gridsquare = cfg_get_str(cfg, "site/gridsquare");
-
-   ///////////////////////////
-   // Perform startup tasks //
-   ///////////////////////////
-
-   // Initialize termbox
-   tb_init();
-   ui_resize_window();
-   ta_printf("$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
-
+int ui_textarea_init() {
    /////////////////////////////////
    // Setup the scrollback buffer //
    /////////////////////////////////
@@ -360,69 +313,4 @@ int main(int argc, char **argv) {
       scrollback_lines = tb_height() * 5;
       printf("ui/scrollback-lines not set or unparsable in configuration. defaulting to %d", scrollback_lines);
    }
-
-   /////////////////////
-   // Draw the screen //
-   /////////////////////
-   redraw_screen();
-
-   ///////////////////////////////////////////
-   // Setup libev to handle termbox2 events //
-   ///////////////////////////////////////////
-   tb_get_fds(&fd_tb_tty, &fd_tb_resize);
-
-   // stdio occupy 0-2 (stdin, stdout, stderr)
-   if (fd_tb_tty >= 2 && fd_tb_resize >= 2) {
-      // add to libev set
-   } else {
-      ta_printf("$RED$tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
-      tb_present();
-      exit(200);
-   }
-   ev_io_init(&termbox_watcher, termbox_cb, fd_tb_tty, EV_READ);
-   ev_io_init(&termbox_resize_watcher, termbox_cb, fd_tb_resize, EV_READ);
-   ev_io_start(loop, &termbox_watcher);
-   ev_io_start(loop, &termbox_resize_watcher);
-
-   // Initialize the GNIS place names database
-
-   // Initialize the Callsign lookup system
-
-   // Load the watchlists
-   watchlist_load(cfg_get_str(cfg, "ui/alerts/watchfile"));
-
-   // Set up IPC
-
-   // Start supervising subprocesses:
-   //	ft8capture (single instance per device)
-        // XXX: Walk the tree at cfg:devices
-//        subproc_start()
-        // XXX: Walk the tree at cfg:bands
-   //	ft8decoder (one per band)
-
-   // main loop...
-   while (!dying) {
-      // XXX: do libev stuff and decide if there's waiting input on fd_tb_tty or fd_fb_resize and act appropriately...
-      ev_run (loop, 0);
-
-      // if ev loop exits, we need to die..
-      dying = 1;
-   }
-
-   ui_shutdown();
-   return 0;
-}
-
-///////////
-// Menus //
-///////////
-int view_config(void) {
-   // XXX: Show the yajl config tree as a scrollable 'menu', without editing
-   return 0;
-}
-
-void halt_tx_now(void) {
-   ta_printf("$RED$Halting TX!");
-   redraw_screen();
-   tb_present();
 }

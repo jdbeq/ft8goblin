@@ -1,3 +1,6 @@
+# Adventurous, huh? So there's some weird things happening here to make sure parellel builds work..
+# Try it! 'make -j40 clean world' or similar should successfully build
+
 all: world
 
 PREFIX ?= /usr
@@ -9,11 +12,12 @@ bins := ft8goblin ft8decoder ft8encoder sigcapd
 bin_install_path := ${PREFIX}/bin
 etc_install_path ?= /etc/ft8goblin
 lib_install_path := ${PREFIX}/lib
-# required libraries (-l${x} will be expanded later)
-common_libs += yajl ev termbox2 uhd rtlsdr
-ft8goblin_libs += ncurses
+
+# required libraries: -l${x} will be expanded later...
+common_libs += yajl ev
+ft8goblin_libs += ncurses termbox2
 ft8decoder_libs += ft8
-sigcapd_libs += uhd rtlsdr
+sigcapd_libs += uhd rtlsdr uhd rtlsdr
 
 ifeq (${PULSEAUDIO},y)
 libs += pulse
@@ -37,6 +41,11 @@ common_objs += ipc.o
 common_objs += util.o
 common_objs += ringbuffer.o
 
+####################
+# RUI: rustyaxe UI #
+####################
+rui_objs += ui.o ui-input.o ui-menu.o
+
 ###########
 # FT8 TUI #
 ###########
@@ -44,7 +53,7 @@ common_objs += ringbuffer.o
 ft8goblin_objs += sql.o
 
 # tty user interface
-ft8goblin_objs += ui.o ui-input.o ui-menu.o
+ft8goblin_objs += ${rui_objs} 
 
 # watch lists / alerts
 ft8goblin_objs += watch.o
@@ -63,6 +72,9 @@ ft8goblin_objs += maidenhead.o
 
 # for dealing with supervising capture and decode processes
 ft8goblin_objs += subproc.o
+
+# main process
+ft8goblin_objs += ft8goblin.o
 
 ###################
 # FT8 De/En-coder #

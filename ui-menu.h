@@ -32,12 +32,21 @@ extern "C" {
       int	   item;		// menu.menu_items[x]
    } menu_history_t;
 
+   typedef struct menu_window {
+      char *name;
+      char *title;
+      int	x, y;			// x, y of origin of window
+      int width, height;		// size of dialog
+   } menu_window_t;
+
    extern menu_history_t menu_history[MAX_MENULEVEL];	// history for ESC (go back) in menus ;)
    extern int menu_history_clear(void);
    extern void menu_history_push(menu_t *menu, int item);
    extern void menu_history_pop(void);
+   extern menu_window_t *menu_render_box(menu_t *menu, int menu_entries);
+   extern int menu_render_item(menu_window_t *mp, menu_t *menu, int menu_item);
    extern int menu_close(void);
-   extern int menu_show(menu_t *menu);
+   extern int menu_show(menu_t *menu, int item);
 
    // globals from menu.c
    extern menu_history_t menu_history[MAX_MENULEVEL];
