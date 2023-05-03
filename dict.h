@@ -154,9 +154,9 @@ extern int dict_dump(dict *d, FILE *out);
  *                 5 = Create renamed key (.new)
  */
 extern dict *dict_merge(dict *a, dict *b, int merge_type);
-extern const int dict_getInt(dict *cp, const char *key, const int def);
-extern bool  dict_getBool(dict *cp, const char *key, bool def);
-extern const char *dict_getString(dict *cp, const char *key, const char *def);
-extern const double dict_getDouble(dict *cp, const char *key, const double def);
+extern const int dict_get_int(dict *cp, const char *key, const int def);
+extern bool  dict_get_bool(dict *cp, const char *key, bool def);
+extern const char *dict_get_string(dict *cp, const char *key, const char *def);
+extern const double dict_get_double(dict *cp, const char *key, const double def);
 
 #endif

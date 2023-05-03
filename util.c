@@ -17,7 +17,7 @@ int is_file(const char *path) {
       return 0;
 
    if (S_ISREG(sb.st_mode)) {
-      log_send(log, LOG_DEBUG, "is_file: %s: true", path);
+      log_send(mainlog, LOG_DEBUG, "is_file: %s: true", path);
       return 1;
    }
 

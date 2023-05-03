@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
    mycall = cfg_get_str(cfg, "site/mycall");
    gridsquare = cfg_get_str(cfg, "site/gridsquare");
 
-   log = log_open(cfg_get_str(cfg, "logging/ui-logpath"));
+   mainlog = log_open(cfg_get_str(cfg, "logging/ui-logpath"));
 
    ui_init();
    ui_resize_window();

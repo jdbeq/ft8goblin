@@ -5,7 +5,7 @@
 extern char *progname;
 extern int dying;
 
-LogHndl *log = NULL;
+LogHndl *mainlog = NULL;
 
 static struct log_levels {
    const char *str;

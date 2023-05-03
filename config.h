@@ -7,6 +7,7 @@
 #include <yajl/yajl_tree.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include "dict.h"
 
 #define	PATHMAX_JSON	16
 ///////////////////////
@@ -22,7 +23,7 @@ extern "C" {
 #endif
     // Global configuration pointer
     extern yajl_val cfg;
-
+    extern dict     *runtime_cfg;
     // Parse the configuration and return a yajl tree
     extern yajl_val parse_config(const char *cfgfile);
     extern int free_config(yajl_val node);

@@ -1,6 +1,8 @@
 /*
  * json configuration parser
  */
+#include "config.h"
+#include "dict.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -8,9 +10,10 @@
 #include <yajl/yajl_tree.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include "config.h"
 
 yajl_val cfg = NULL;
+dict *runtime_cfg = NULL;
+
 yajl_val parse_config(const char *cfgfile) {
     FILE *fp = NULL;
     unsigned char *data = NULL;
@@ -108,6 +111,10 @@ yajl_val load_config(void) {
    // and then the global directory, if config in pwd wasn't found...
    if (rv == NULL && (rv = parse_config("/etc/ft8goblin/config.json")) != NULL)
       return rv;
+
+   if (runtime_cfg == NULL) {
+      runtime_cfg = dict_new();
+   }
 
    // nope, return error
    return NULL;

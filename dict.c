@@ -564,7 +564,7 @@ int main(int argc, char **argv) {
 }
 #endif
 
-bool dict_getBool(dict *cp, const char *key, bool def) {
+bool dict_get_bool(dict *cp, const char *key, bool def) {
    const char *str;
 
    if ((str = dict_get(cp, key, NULL))) {
@@ -577,7 +577,7 @@ bool dict_getBool(dict *cp, const char *key, bool def) {
    return def;
 }
 
-const double dict_getDouble(dict *cp, const char *key, const double def) {
+const double dict_get_double(dict *cp, const char *key, const double def) {
    char *end;
    const char *str;
    double val;
@@ -594,7 +594,7 @@ const double dict_getDouble(dict *cp, const char *key, const double def) {
    return val;
 }
 
-const int dict_getInt(dict *cp, const char *key, const int def) {
+const int dict_get_int(dict *cp, const char *key, const int def) {
    char *end;
    const char *str;
    int val;
