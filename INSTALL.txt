@@ -10,7 +10,7 @@ These are the devuan/debian names for them, your distro may vary.
 BUILDING
 --------
 
-Try 'make world' to build.
+Try 'make clean world' to build.
 
 You'll need sudo access to install termbox2, if it's not already installed.
 

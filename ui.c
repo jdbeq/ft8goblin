@@ -13,6 +13,8 @@
 #include "subproc.h"
 #include "logger.h"
 
+extern TextArea *msgbox;
+
 // Let's not make this public, but rather provide any utilities needed...
 static TextArea *ta_textareas[MAX_TEXTAREAS];
 
@@ -156,10 +158,11 @@ void ui_resize_window(void) {
    if (width < 80 || height < 20) {
       tb_clear();
       tb_present();
-      tb_shutdown();
       fprintf(stderr, "[display] Your terminal has a size of %dx%d, this is too small! I cannot continue...\n", width, height);
-      dying = 1;
-      exit(200);
+      log_send(mainlog, LOG_CRIT, "Your terminal has a size of %dx%d, this is too small! I cannot continue...", width, height);
+      ta_printf(msgbox, "$RED$Your terminal has a size of %dx%d, this is too small! I cannot continue...\n", width, height);
+      tb_present();
+      return;
    } else {
       log_send(mainlog, LOG_NOTICE, "display resolution %dx%d is acceptable!", width, height);
    }

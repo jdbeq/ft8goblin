@@ -58,14 +58,11 @@ ft8goblin_objs += sql.o
 # tty user interface
 ft8goblin_objs += ${rui_objs} 
 
-# watch lists / alerts
-ft8goblin_objs += watch.o
-
 # FCC ULS database (US hams)
 ft8goblin_objs += fcc-db.o
 
-# QRZ XML API callsign lookups (paid)
-ft8goblin_objs += qrz-xml.o
+ft8goblin_objs += ft8goblin.o
+ft8goblin_objs += hamlib.o
 
 # Geographic Names Information System (GNIS) local database lookup for place names
 ft8goblin_objs += gnis-lookup.o
@@ -76,8 +73,11 @@ ft8goblin_objs += maidenhead.o
 # for dealing with supervising capture and decode processes
 ft8goblin_objs += subproc.o
 
-# main process
-ft8goblin_objs += ft8goblin.o
+# watch lists / alerts
+ft8goblin_objs += watch.o
+
+# QRZ XML API callsign lookups (paid)
+ft8goblin_objs += qrz-xml.o
 
 ###################
 # FT8 De/En-coder #
@@ -94,6 +94,7 @@ ft8encoder_objs += ft8encoder.o ${ft8coder_objs}
 ###########
 sigcapd_objs += sigcapd.o
 sigcapd_objs += uhd.o
+sigcapd_objs += hamlib.o
 
 # ALSA audio support (if you're using ncurses, you might well not have pulse/pipewire either)
 sigcapd_objs += alsa.o
@@ -137,9 +138,12 @@ install:
 	@for i in ${bins}; do \
 		install -m 0755 $$i ${bin_install_path}/$$i; \
 	done
-.PHONY: clean subdirs-world
 
-distclean: clean subdirs-clean
+.PHONY: clean subdirs-world distclean
+
+distclean: 
+	${RM} *.log
+	${MAKE} clean subdirs-clean
 
 clean:
 	@echo "Cleaning..."
