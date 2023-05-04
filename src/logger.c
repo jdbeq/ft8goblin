@@ -1,6 +1,10 @@
 #include "config.h"
 #include "logger.h"
 #include "util.h"
+#include <limits.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
 // XXX: We should mirror log messages above a set priority into the msgbox TextArea if it exists ;)
 // from main program usually
 extern char *progname;
@@ -49,6 +53,8 @@ static inline const int LogLevel(const char *name) {
    return -1;
 }
 
+int log_level = -1;
+
 int log_send_va(LogHndl *log, int level, const char *msg, va_list ap) {
    char datebuf[32];
    char buf[4096];
@@ -60,9 +66,7 @@ int log_send_va(LogHndl *log, int level, const char *msg, va_list ap) {
    memset(datebuf, 0, sizeof(datebuf));
    strftime(datebuf, sizeof(datebuf) - 1, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
-   max = LOG_DEBUG;
-
-   if (max < level)
+   if (log_level > level)
       return -1;
 
    if (log) {
@@ -100,9 +104,24 @@ int log_send(LogHndl *log, int level, const char *msg, ...) {
 
 LogHndl *log_open(const char *path) {
    LogHndl *log = (LogHndl *)malloc(sizeof(LogHndl));
+
    if (log == NULL) {
       fprintf(stderr, "log_init: out of memory!\n");
       exit(ENOMEM);
+   }
+
+   // if log level hasn't been set yet, set it
+   if (log_level == -1) {
+      char buf[PATH_MAX + 1];
+      memset(buf, 0, PATH_MAX + 1);
+      snprintf(buf, PATH_MAX, "logging/%s-loglevel", progname);
+      int x = cfg_get_int(cfg, buf);
+      fprintf(stderr, "can't find cfg:%s key, please set it in config.json!\n", buf);
+      if (x > 0) {
+         log_level = x;
+      } else {
+         log_level = LOG_NOTICE;
+      }
    }
 
    if (strcasecmp(path, "syslog") == 0) {

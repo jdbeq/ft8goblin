@@ -26,9 +26,9 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-ERROR_FLAGS := -Werror -Wno-error=int-conversion
-WARN_FLAGS := -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -pedantic
-CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall ${WARN_FLAGS} ${ERROR_FLAGS}
+ERROR_FLAGS := -Werror -Wno-error=int-conversion -Wno-missing-braces
+WARN_FLAGS := -pedantic -Wno-unused-variable -Wno-unused-function #-Wno-missing-braces
+CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ -I./include -Wall ${WARN_FLAGS} ${ERROR_FLAGS}
 LDFLAGS += $(foreach x,${common_libs},-l${x}) -fsanitize=address
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
 ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})
@@ -50,7 +50,7 @@ common_objs += util.o
 ################
 # TUI: text UI #
 ################
-tui_objs += tui.o tui-input.o tui-menu.o
+tui_objs += tui.o tui-input.o tui-menu.o tui-textarea.o
 
 ###########
 # FT8 TUI #
@@ -168,27 +168,34 @@ subdirs-world:
 	@echo "Building subdirectories..."
 	@for i in ${subdirs}; do ${MAKE} -C $$i ; done
 
+# build the user frontend
 ft8goblin: ${ft8goblin_real_objs}
 	${CC} -o $@ $^ ${ft8goblin_ldflags} 
 
+# and the backends...
 ft8decoder: ${ft8decoder_real_objs}
 	${CC} -o $@ $^ ${ft8coder_ldflags}
 
 ft8encoder: ${ft8encoder_real_objs}
 	${CC} -o $@ $^ ${ft8coder_ldflags}
 
+# sigcapd needs more libraries than the others
 sigcapd: ${sigcapd_real_objs}
 	${CC} -o $@ $^ ${sigcapd_ldflags}
 
-obj/sigcapd.o: sigcapd.c
+obj/sigcapd.o: src/sigcapd.c
 	${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
 
-obj/%.o: %.c $(wildcard *.h)
+obj/%.o: src/%.c $(wildcard *.h)
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} -o $@ -c $<
 
 qrztest: qrztest2.c
 	gcc -o $@ $< -lxml2 -lcurl -I/usr/include/libxml2
 
-obj/ui-menu.o: ui-menu.c
-	${CC} $(filter-out -Werror,${CFLAGS}) -o $@ -c $<
+####################################################################
+# ugly hacks to quiet the compiler until we can clean things up... #
+####################################################################
+obj/tui-menu.o: src/tui-menu.c
+#	${CC} $(filter-out -Werror,${CFLAGS}) -o $@ -c $<
+	${CC} ${CFLAGS} -o $@ -c $< -Wno-int-conversion
