@@ -83,8 +83,8 @@ static void print_status(void) {
       exit(EXIT_FAILURE);
    }
 
-   printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "[%s] ", outstr);
-   offset += 12;
+   printf_tb(offset, height - 1, TB_YELLOW|TB_BOLD, 0, "%s ", outstr);
+   offset += 10;
 
    // callsign
    printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyCall:");
@@ -177,7 +177,12 @@ int main(int argc, char **argv) {
    mycall = cfg_get_str(cfg, "site/mycall");
    gridsquare = cfg_get_str(cfg, "site/gridsquare");
 
-   mainlog = log_open(dict_get(runtime_cfg, "logpath", "file://ft8goblin.log"));
+   const char *logpath = dict_get(runtime_cfg, "logpath", "file://ft8goblin.log.txt");
+   if (logpath != NULL) {
+      mainlog = log_open(logpath);
+   } else {
+      log_open("stderr");
+   }
    log_send(mainlog, LOG_NOTICE, "ft8goblin starting up!");
 
    tui_init();

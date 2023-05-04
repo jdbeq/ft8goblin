@@ -26,20 +26,20 @@ termbox2/*.a
 
 # Exclude binaries
 ft8goblin
-ft8decoder
-ft8encoder
+decoderd-ft8
+encoderd-ft8
 sigcapd
 
 # These might contain sensitive user data...
-watchlist.txt
-config.json
+etc/watchlist.txt
+etc/config.json
+etc/*.db
 
 # log files
 *.log
 *.log.txt
 
-# Databases that are large and can be dealt with by the builder...
-etc/*.db
+# Database sources are large and can be dealt with by the builder...
 fcc_uls/download/*
 gnis/Text/*
 gnis/disclaimer.txt

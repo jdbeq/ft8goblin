@@ -3,6 +3,7 @@
  */
 #include "config.h"
 #include "dict.h"
+#include "util.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -105,23 +106,50 @@ int free_config(yajl_val node) {
 yajl_val load_config(void) {
    yajl_val rv = NULL;
 
-   // Try current directory first
-   if ((rv = parse_config("config.json")) != NULL) {
-      return rv;
+
+   // try the source directory first, in case they're trying new version out..
+   if (is_file("etc/config.json")) {
+      if ((rv = parse_config("etc/config.json")) != NULL) {
+         // using local config (./etc)
+      }
+   }
+
+   if (!rv && is_file("./config.json")) {
+      if ((rv = parse_config("./config.json")) != NULL) {
+         // using local config (pwd)
+      }
    }
 
    // and then the global directory, if config in pwd wasn't found...
-   if (rv == NULL && (rv = parse_config("/etc/ft8goblin/config.json")) != NULL)
-      return rv;
+   if (!rv && is_file("/etc/ft8goblin/config.json")) {
+      if (rv == NULL && (rv = parse_config("/etc/ft8goblin/config.json")) != NULL) {
+         // using global (/etc/ft8goblin/) config
+      }
+   }
 
+   if (cfg == NULL) {
+      cfg = rv;
+   }
+
+   // initialize the runtime configuration if it hasn't been done yet...
    if (runtime_cfg == NULL) {
       runtime_cfg = dict_new();
 
-      char buf[4096];
+      char buf[4096], *bp = NULL;;
       // find the logpath...
       memset(buf, 0, 4096);
-      snprintf(buf, 4095, "logging/%s-logpath", progname);
-      char *bp = (char *)cfg_get_str(cfg, buf);
+      snprintf(buf, 4096, "logging/%s-logpath", progname);
+      bp = (char *)cfg_get_str(cfg, buf);
+
+      if (bp != NULL) {
+         dict_add(runtime_cfg, "logpath", bp);
+      } else {
+         dict_add(runtime_cfg, "logpath", "ft8goblin.txt.log");
+      }
+      // find the logpath...
+      memset(buf, 0, 4096);
+      snprintf(buf, 4096, "logging/%s-loglevel", progname);
+      bp = (char *)cfg_get_str(cfg, buf);
 
       if (bp != NULL) {
          dict_add(runtime_cfg, "loglevel", bp);
@@ -131,31 +159,19 @@ yajl_val load_config(void) {
 
       // repeat for pidfile...
       memset(buf, 0, 4096);
-      snprintf(buf, 4095, "logging/%s-pidfile", progname);
+      snprintf(buf, 4096, "logging/%s-pidfile", progname);
       bp = (char *)cfg_get_str(cfg, buf);
 
       if (bp != NULL) {
          dict_add(runtime_cfg, "pidfile", bp);
       } else {
          memset(buf, 0, 4096);
-         snprintf(buf, 4095, "%s.pid", progname);
+         snprintf(buf, 4096, "%s.pid", progname);
          dict_add(runtime_cfg, "pidfile", bp);
-      }
-
-      // repeat for daemonize flag...
-      memset(buf, 0, 4096);
-      snprintf(buf, 4095, "logging/%s-logpath", progname);
-      bp = (char *)cfg_get_str(cfg, buf);
-
-      if (bp != NULL) {
-         dict_add(runtime_cfg, "daemonize", bp);
-      } else {
-         dict_add(runtime_cfg, "daemonize", "false");
       }
    }
 
-   // nope, return error
-   return NULL;
+   return rv;
 }
 
 // This function shouldn't be exported

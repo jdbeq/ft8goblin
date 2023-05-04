@@ -1,0 +1,18 @@
+Here's a rough draft of how things work
+
+	ft8goblin (Main process)
+		Provides a user interface for this mess.
+
+		Supervises subprocess below
+
+	decoderd-ft8
+		Decodes FT4 and FT8 messages on various bands
+		Listens for frames from sigcapd
+
+	encoderd-ft8
+		Encodes FT4 and FT8 messages for transmission
+		Sends frames via alsa/pulse to a rig controlled by hamlib
+
+	sigcapd
+		Controls and captures samples from a radio and provides samples
+		to decoderd-*

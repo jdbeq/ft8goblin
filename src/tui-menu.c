@@ -128,8 +128,14 @@ int menu_show(menu_t *menu, int item) {
 
    // render each menu item into the menu
    for (size_t i = 0; i < mi_entries; i++) {
-      menu_item_render(mp, menu, i);
+      menu_window_t *newwin = menu_item_render(mp, menu, i);
+      // XXX: finish this
+      // stop memory leak
+      free(newwin);
    }
+
+   // XXX: finish this
+   free(mp);
 
    tb_present();
    return 0;

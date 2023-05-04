@@ -66,7 +66,7 @@ int log_send_va(LogHndl *log, int level, const char *msg, va_list ap) {
    memset(datebuf, 0, sizeof(datebuf));
    strftime(datebuf, sizeof(datebuf) - 1, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
-   if (log_level > level)
+   if (log_level < level)
       return -1;
 
    if (log) {
@@ -81,7 +81,7 @@ int log_send_va(LogHndl *log, int level, const char *msg, va_list ap) {
          fp = log->fp;
    }
 
-   // if we're dying, try to write to stderr...
+   // if we're dying, try to write to stderr too...
    if (dying) {
       fprintf(stderr, "%s [%s] %s\n", datebuf, LogName(level), buf);
       fflush(stderr);
@@ -103,9 +103,15 @@ int log_send(LogHndl *log, int level, const char *msg, ...) {
 }
 
 LogHndl *log_open(const char *path) {
-   LogHndl *log = (LogHndl *)malloc(sizeof(LogHndl));
+   LogHndl *log = NULL;
 
-   if (log == NULL) {
+   if (path == NULL) {
+      fprintf(stderr, "log_open: attempting to open NULL logfile!!\n");
+      exit(1);
+//      return NULL;
+   }
+
+   if ((log = (LogHndl *)malloc(sizeof(LogHndl))) == NULL) {
       fprintf(stderr, "log_init: out of memory!\n");
       exit(ENOMEM);
    }
@@ -115,8 +121,8 @@ LogHndl *log_open(const char *path) {
       char buf[PATH_MAX + 1];
       memset(buf, 0, PATH_MAX + 1);
       snprintf(buf, PATH_MAX, "logging/%s-loglevel", progname);
-      int x = cfg_get_int(cfg, buf);
-      fprintf(stderr, "can't find cfg:%s key, please set it in config.json!\n", buf);
+      int x = LogLevel(cfg_get_str(cfg, buf));
+
       if (x > 0) {
          log_level = x;
       } else {

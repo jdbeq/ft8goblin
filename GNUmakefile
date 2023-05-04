@@ -7,7 +7,7 @@ PREFIX ?= /usr
 PULSEAUDIO=n
 ALSA=y
 
-bins := ft8goblin ft8decoder ft8encoder sigcapd
+bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd
 
 bin_install_path := ${PREFIX}/bin
 etc_install_path ?= /etc/ft8goblin
@@ -108,7 +108,8 @@ sigcapd_objs += pulse.o
 sigcapd_cflags += -DPULSEAUDIO
 .PHONY: obj/pulse.o pulse.c obj/sigcapd.o
 obj/pulse.o: pulse.c
-	${CC} ${CFLAGS} ${sigcapd_flags} -o $@ -c $<
+	@echo 
+	@${CC} ${CFLAGS} ${sigcapd_flags} -o $@ -c $<
 else
 extra_clean += obj/pulse.o
 endif
@@ -170,21 +171,26 @@ subdirs-world:
 
 # build the user frontend
 ft8goblin: ${ft8goblin_real_objs}
-	${CC} -o $@ $^ ${ft8goblin_ldflags} 
+	@echo "[LD] $^ -> $@"
+	@${CC} -o $@ $^ ${ft8goblin_ldflags} 
 
 # and the backends...
-ft8decoder: ${ft8decoder_real_objs}
+decoderd-ft8: ${ft8decoder_real_objs}
+	@echo "[LD] $^ -> $@"
 	${CC} -o $@ $^ ${ft8coder_ldflags}
 
-ft8encoder: ${ft8encoder_real_objs}
+encoderd-ft8: ${ft8encoder_real_objs}
+	@echo "[LD] $^ -> $@"
 	${CC} -o $@ $^ ${ft8coder_ldflags}
 
 # sigcapd needs more libraries than the others
 sigcapd: ${sigcapd_real_objs}
-	${CC} -o $@ $^ ${sigcapd_ldflags}
+	@echo "[LD] $^ -> $@"
+	@${CC} -o $@ $^ ${sigcapd_ldflags}
 
 obj/sigcapd.o: src/sigcapd.c
-	${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
+	@echo "[LD] $^ -> $@"
+	@${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
 
 obj/%.o: src/%.c $(wildcard *.h)
 	@echo "[CC] $< -> $@"
@@ -197,5 +203,6 @@ qrztest: qrztest2.c
 # ugly hacks to quiet the compiler until we can clean things up... #
 ####################################################################
 obj/tui-menu.o: src/tui-menu.c
+	@echo "[CC] $< -> $@"
 #	${CC} $(filter-out -Werror,${CFLAGS}) -o $@ -c $<
-	${CC} ${CFLAGS} -o $@ -c $< -Wno-int-conversion
+	@${CC} ${CFLAGS} -o $@ -c $< -Wno-int-conversion
