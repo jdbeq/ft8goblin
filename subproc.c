@@ -11,6 +11,7 @@
 #include "subproc.h"
 #include "ui.h"
 
+extern TextArea *msgbox;
 extern int y;			// from ui.c
 static int max_subprocess = 0;
 
@@ -19,7 +20,7 @@ static subproc_t *children[MAX_SUBPROC];
 
 static void subproc_delete(int i) {
    if (children[i] == NULL) {
-      ta_printf("$RED$%s: invalid child process %i (NULL) requested for deletion", __FUNCTION__, i);
+      ta_printf(msgbox, "$RED$subproc_delete: invalid child process %i (NULL) requested for deletion", i);
       return;
    }
 
@@ -46,14 +47,14 @@ int subproc_killall(int signum) {
    }
 
    if (max_subprocess > MAX_SUBPROC) {
-      ta_printf("$RED$%s: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", __FUNCTION__, max_subprocess, MAX_SUBPROC);
+      ta_printf(msgbox, "$RED$subproc_killall: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", max_subprocess, MAX_SUBPROC);
       tb_present();
       exit(200);
    }
 
    int i = 0;
    for (i = 0; i < max_subprocess; i++) {
-      ta_printf("$YELLOW$sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
+      ta_printf(msgbox, "$YELLOW$sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
       tb_present();
 
       // if successfully sent signal, increment rv, so we'll sleep if called from subproc_shutdown()

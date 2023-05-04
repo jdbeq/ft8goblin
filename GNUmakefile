@@ -26,7 +26,7 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-CFLAGS += -O2 -ggdb -I./ft8_lib -Wall
+CFLAGS += -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall -Wno-unused-variable -Wno-unused-function #-Werror -pedantic
 LDFLAGS += $(foreach x,${common_libs},-l${x})
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
 ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})
@@ -92,21 +92,30 @@ ft8encoder_objs += ft8encoder.o ${ft8coder_objs}
 ###########
 # sigcapd #
 ###########
-# ALSA audio support (if you're using ncurses, you might well not have pulse/pipewire either)
-sigcapd_objs += alsa.o
+sigcapd_objs += sigcapd.o
 
 # uhd (USRP) devices
 sigcapd_objs += uhd.o
 
+# ALSA audio support (if you're using ncurses, you might well not have pulse/pipewire either)
+sigcapd_objs += alsa.o
+
+ifeq (${PULSEAUDIO}, y)
 # XXX: This is a stub for now, feel free to write it :P
 sigcapd_objs += pulse.o
+sigcapd_cflags += -DPULSEAUDIO
+.PHONY: obj/pulse.o pulse.c obj/sigcapd.o
+obj/pulse.o: pulse.c
+	${CC} ${CFLAGS} ${sigcapd_flags} -o $@ -c $<
+else
+extra_clean += obj/pulse.o
+endif
 
 # interprocess communication (with sigcapd and ft8goblin frontend)
 sigcapd_objs += ipc.o 
 
 # Source for UDP audio frames, such as from SDR software
 sigcapd_objs += udp_src.o
-sigcapd_objs += sigcapd.o
 
 ##############################################################
 ##############################################################
@@ -139,7 +148,7 @@ clean:
 
 # Try to enforce cleaning before other rules
 ifneq ($(filter clean,$(MAKECMDGOALS)),)
-	$(shell ${RM} -f ${bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs}  ${sigcapd_real_objs})
+	$(shell ${RM} -f ${bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs}  ${sigcapd_real_objs} ${extra_clean})
 endif
 
 subdirs-clean:
@@ -166,9 +175,15 @@ ft8encoder: ${ft8encoder_real_objs}
 sigcapd: ${sigcapd_real_objs}
 	${CC} -o $@ $^ ${sigcapd_ldflags}
 
+obj/sigcapd.o: sigcapd.c
+	${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
+
 obj/%.o: %.c
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} -o $@ -c $<
 
 qrztest: qrztest2.c
 	gcc -o $@ $< -lxml2 -lcurl -I/usr/include/libxml2
+
+obj/ui-menu.o: ui-menu.c
+	${CC} $(filter-out -Werror,${CFLAGS}) -o $@ -c $<

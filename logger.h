@@ -30,7 +30,7 @@ extern "C" {
    int log_send(LogHndl *log, int level, const char *msg, ...);
    int log_send_va(LogHndl *log, int level, const char *msg, va_list);
    extern LogHndl *log_open(const char *path);
-   extern void logger_destroy(LogHndl *log);
+   extern void log_close(LogHndl *log);
    extern LogHndl *mainlog;
 #ifdef __cplusplus
 };

@@ -22,6 +22,7 @@
  *	A demo is included and compiled with -DMAIN. Use the Makefile to
  * create a benchmark program and run it.
  */
+#include <string.h>
 #include "dict.h"
 
 /* Minimum dictionary size to start with */

@@ -8,6 +8,8 @@
 #include "ui-input.h"
 #include "ringbuffer.h"
 
+#define	MAX_TEXTAREAS	6
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,7 +31,13 @@ extern "C" {
    extern int ta_append(TextArea *ta, const char *buf);
    extern void ta_printf(TextArea *ta, const char *fmt, ...);
    extern void ta_redraw(TextArea *ta);
+   extern void ta_resize(TextArea *ta);
+   extern void ta_redraw_all(void);
+   extern void ta_resize_all(void);
    extern void ta_destroy(TextArea *ta);
+
+   // Returns: index of button pressed. (Buttons are 0 = OK, 1 = CANCEL, 2 = OK|CANCEL, 3 = OK|CANCEL|HELP)
+   extern int modal_dialog(int buttons, int border_fg, int border_bg, int title_fg, int title_bg, const char *title, int text_fg, int text_bg, const char *fmt, ...);
 
    // ui functions
    extern void ui_init(void);
@@ -46,14 +54,9 @@ extern "C" {
    extern int line_status;		// status line
    extern int line_input;		// input field
 
-   // stuff pulled once from config...
-   extern const char *mycall;		// cfg:ui/mycall
-   extern const char *gridsquare;	// cfg:ui/gridsquare
-
    // These need to move elsewhere...
    extern void halt_tx_now(void);
    extern int view_config(void);
-   extern TextArea *msgbox;
    extern int dying;			// Are we shutting down?
    extern int tx_enabled;		// Master toggle to TX mode.
 #ifdef __cplusplus

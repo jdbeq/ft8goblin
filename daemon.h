@@ -5,7 +5,7 @@
 extern "C" {
 #endif
    extern int daemonize(void);
-   extern void shutdown(int status);
+   extern void fini(int status);
    extern void init_signals(void);
 #ifdef __cplusplus
 };

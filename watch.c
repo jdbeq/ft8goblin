@@ -24,13 +24,13 @@ int watch_destroy(watch_item_t *w) {
           w->watch_string_sz = 0;
        } else {
           // XXX: This shouldn't happen...
-          fprintf(stderr, "watch_destroy called on w <%x> with watch_string_sz <%d> but watch_string is NULL!\n", w, w->watch_string_sz);
+          fprintf(stderr, "watch_destroy called on w <%p> with watch_string_sz %lu but watch_string is NULL!\n", (void *)w, w->watch_string_sz);
           return -EFAULT;
        }
     } else {
        // Catch some error conditions...
        if (w->watch_string != NULL) {
-          fprintf(stderr, "watch_destroy: w <%x>'s watch_string_sz <%d> <= 0 yet watch_string is not NULL <%x>!\n", w, w->watch_string_sz, w->watch_string);
+          fprintf(stderr, "watch_destroy: w <%p>'s watch_string_sz %lu <= 0 yet watch_string is not NULL <%s>!\n", (void *)w, w->watch_string_sz, w->watch_string);
           return -EFAULT;
        }
     }
@@ -42,7 +42,7 @@ watch_item_t *watch_create(watch_type_t watch_type, const char *watch_string, si
     watch_item_t *w = NULL;
 
     if (watch_type == WATCH_NONE || watch_string == NULL || watch_string_sz <= 0 || watch_regex_level < 0) {
-       fprintf(stderr, "watch_create called with invalid parameters: watch_type <%d>, watch_string <%s>, watch_string_sz <%d>, watch_regex_level <%d>\n", watch_type, watch_string, watch_string_sz, watch_regex_level);
+       fprintf(stderr, "watch_create called with invalid parameters: watch_type %i, watch_string <%s>, watch_string_sz %lu, watch_regex_level %i\n", watch_type, watch_string, watch_string_sz, watch_regex_level);
        return NULL;
     }
 
@@ -69,7 +69,7 @@ int watchlist_load(const char *path) {
    FILE *fp = NULL;
 
    if ((fp = fopen(path, "r")) == NULL) {
-      fprintf(stderr, "%s: Failed opening %s: %d:%s\n", __FUNCTION__, path, errno, strerror(errno));
+      fprintf(stderr, "watchlist_loads: Failed opening %s: %d:%s\n", path, errno, strerror(errno));
       return -errno;
    }
 

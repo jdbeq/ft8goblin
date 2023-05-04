@@ -1,8 +1,10 @@
 #include <errno.h>
+#include <termbox2.h>
 #include "config.h"
 #include "util.h"
 #include "ui.h"
 
+extern TextArea *msgbox;
 menu_history_t menu_history[MAX_MENULEVEL];	// history for ESC (go back) in menus ;)
 int	menu_level = 0;		// Which menu level are we in? This is used to keep track of where we are in menu_history
 
@@ -113,13 +115,13 @@ int menu_show(menu_t *menu, int item) {
 
    ta_printf(msgbox, "$RED$Show menu %s <menu_level:%d>!", menu->menu_name, menu_level);
 
-   menu_item_t *ip = menu->menu_items;
+   menu_item_t **ip = menu->menu_items;
    if (ip == NULL) {
       ta_printf(msgbox, "$RED$Invalid menu data, items pointer is NULL");
       return -1;
    }
 
-   size_t mi_entries = (sizeof(ip) / sizeof(menu_item_t));
+   size_t mi_entries = (sizeof(ip) / sizeof(menu[0]));
 
    // render the outer dialog, with space for mi_entries or scrollbars
    menu_window_t *mp = menu_render_box(menu, mi_entries);

@@ -17,7 +17,7 @@ Database *sql_open(const char *path) {
     Database *db = NULL;
 
     if (path == NULL) {
-       fprintf(stderr, "%s: path is NULL!\n", __FUNCTION__);
+       fprintf(stderr, "sql_open: path is NULL!\n");;
        return NULL;
     }
 

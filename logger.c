@@ -1,5 +1,6 @@
 #include "config.h"
 #include "logger.h"
+#include "util.h"
 
 // from main program usually
 extern char *progname;
@@ -59,12 +60,10 @@ int log_send_va(LogHndl *log, int level, const char *msg, va_list ap) {
    memset(datebuf, 0, sizeof(datebuf));
    strftime(datebuf, sizeof(datebuf) - 1, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
-   // XXX: taco
-   max = LogLevel(dict_get(runtime_cfg, "logging/ft8goblin-loglevel", "notice"));
+   max = LOG_DEBUG;
 
    if (max < level)
       return -1;
-
 
    if (log) {
       if (log->type == LOG_syslog) {
@@ -120,13 +119,13 @@ LogHndl *log_open(const char *path) {
       mkfifo(path+7, 0600);
 
       if (!(log->fp = fopen(path + 7, "w"))) {
-         fprintf(stderr, "Failed opening log fifo '%s' %s (%d)", path+7, errno, strerror(errno));
+         fprintf(stderr, "Failed opening log fifo '%s' %d:%s", path+7, errno, strerror(errno));
          log->fp = stderr;
       } else
          log->type = LOG_fifo;
    } else if (strncasecmp(path, "file://", 7) == 0) {
       if (!(log->fp = fopen(path + 7, "w+"))) {
-         fprintf(stderr, "failed opening log file '%s' %s (%d)", path+7, errno, strerror(errno));
+         fprintf(stderr, "failed opening log file '%s' %d:%s", path+7, errno, strerror(errno));
          log->fp = stderr;
       } else
          log->type = LOG_file;
@@ -135,7 +134,7 @@ LogHndl *log_open(const char *path) {
    return log;
 }
 
-void log_destroy(LogHndl *log) {
+void log_close(LogHndl *log) {
    if (log == NULL)
       return;
 

@@ -1,5 +1,6 @@
 #if	!defined(_ui_input_h)
 #define	_ui_input_h
+#include <termbox2.h>
 
 #ifdef __cplusplus
 extern "C" {

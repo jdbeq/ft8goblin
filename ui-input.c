@@ -2,18 +2,18 @@
 // Keyboard/mouse input handler
 //   
 #include <termbox2.h>
-#include <ev.h>
 #include "config.h"
 #include "ui.h"
 #include "util.h"
+#include "logger.h"
+#include <ev.h>
 
 static ev_io termbox_watcher, termbox_resize_watcher;
+extern TextArea *msgbox;
 
 void process_input(struct tb_event *evt) {
    if (evt == NULL) {
-      // XXX: log the error!
-      ta_printf(msgbox, "$RED$%s called with ev == NULL wtf?!", __FUNCTION__);
-      tb_present();
+      log_send(mainlog, LOG_CRIT, "process_input: called with ev == NULL. This shouldn't happen!");
       return;
    }
 
@@ -24,7 +24,6 @@ void process_input(struct tb_event *evt) {
             menu_close();
          } else {
            menu_level = 0; // reset it to zero
-           ta_printf(msgbox, "$YELLOW$The menu is already closed!");
          }
       } else if (evt->key == TB_KEY_TAB) {
         if (menu_level == 0) {		// only apply in main screen
@@ -34,13 +33,9 @@ void process_input(struct tb_event *evt) {
               active_pane = 0;
         }
       } else if (evt->key == TB_KEY_ARROW_LEFT) { 			// left cursor
-         ta_printf(msgbox, "$YELLOW$<");
       } else if (evt->key == TB_KEY_ARROW_RIGHT) {			// right cursor
-         ta_printf(msgbox, "$YELLOW$>");
       } else if (evt->key == TB_KEY_ARROW_UP) {			// up cursor
-         ta_printf(msgbox, "$YELLOW$^");
       } else if (evt->key == TB_KEY_ARROW_DOWN) {			// down cursor
-         ta_printf(msgbox, "$YELLOW$V");
       } else if (evt->key == TB_KEY_CTRL_B) {			// ^B
          if (menu_level == 0) {			// only if we're at main TUI screen (not in a menu)
             menu_show(&menu_bands, 0);
@@ -67,7 +62,9 @@ void process_input(struct tb_event *evt) {
          }
       } else if (evt->key == TB_KEY_CTRL_X || evt->key == TB_KEY_CTRL_Q) {	// is it ^X or ^Q? If so exit
          ta_printf(msgbox, "$RED$Goodbye! Hope you had a nice visit!");
+         dying = 1;
          ui_shutdown();
+         exit(0);
          return;
       } else {      					// Nope - display the event data for debugging
          ta_printf(msgbox, "$RED$unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
@@ -90,7 +87,7 @@ void process_input(struct tb_event *evt) {
 //////////////////////////////////////////
 // Handle termbox tty and resize events //
 //////////////////////////////////////////
-static void termbox_cb(EV_P_ ev_timer *w, int revents) {
+static void termbox_cb(EV_P_ ev_io *w, int revents) {
    struct tb_event evt;		// termbox io events
    tb_poll_event(&evt);
    process_input(&evt);

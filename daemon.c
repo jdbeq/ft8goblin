@@ -86,7 +86,7 @@ int daemonize(void) {
    return 0;
 }
 
-void shutdown(int status) {
+void fini(int status) {
    log_send(mainlog, LOG_CRIT, "shutting down: %d", status);
 //   dump_statistics(cfg->Get("path.statsfile", NULL));
    close(pidfd);
@@ -114,7 +114,7 @@ static void sighandler(int signum) {
       case SIGINT:
       case SIGTERM:
       case SIGKILL:
-         shutdown(signum);
+         fini(signum);
       default:
          log_send(mainlog, LOG_CRIT, "Caught unknown signal %d", signum);
          break;

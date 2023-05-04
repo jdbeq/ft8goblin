@@ -11,20 +11,10 @@
 #include "config.h"
 #include "ui.h"
 #include "subproc.h"
+#include "logger.h"
 
-// main msg area
-TextArea *msgbox = NULL;
-
-// XXX: These should all go into a ConfigData struct
-const char *mycall = NULL;	// cfg:ui/mycall
-const char *gridsquare = NULL;	// cfg:ui/gridsquare
-
-////////////////
-int	line_status = -1;		// status line
-int 	line_input = -1;		// input field
-int	height = -1, width = -1;
-int	active_band = 40;		// Which band are we TXing on?
-int	active_pane = 1;		// active pane (0: TextArea, 1: TX input)
+// Let's not make this public, but rather provide any utilities needed...
+static TextArea *ta_textareas[MAX_TEXTAREAS];
 
 ////////////////////////////////////////////////////////////
 // These let us print unicode to an exact screen location //
@@ -100,6 +90,8 @@ typedef struct ColorPair {
 // Use parse_color above to parse out color strings, whether just $FG$ or $FG,BG$
 static ColorPair parse_color_str(const char *str) {
    ColorPair cp;
+
+   return cp;
 }
 
 //////////////////////////////////////////////
@@ -116,6 +108,10 @@ void ta_redraw(TextArea *ta) {
       // If not, break
 //      break;
    }
+}
+
+void ta_resize(TextArea *ta) {
+   // XXX: We have to calculate sizes, if this is to be used for multiple TextAreas....
 }
 
 //////////////////////////////////////////
@@ -153,121 +149,6 @@ void ta_printf(TextArea *ta, const char *fmt, ...) {
 //    print_tb(buf, my_x, my_y, fg, bg);
 }
 
-///////////////////////////////////////////////////////
-static void print_help(void) {
-   int offset = 0;
-   printf_tb(offset, 0, TB_GREEN|TB_BOLD, 0, "*Keys* ");
-   offset += 7;
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "ESC ");
-   offset += 4;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Go Back ");
-   offset += 8;
-
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "TAB ");
-   offset += 4;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Switch Panes ");
-   offset += 13;
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^Q/^X ");
-   offset += 6;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Exit ");
-   offset += 5;
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^B ");
-   offset += 3;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Band Menu ");
-   offset += 10;
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^M ");
-   offset += 3;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Menu ");
-   offset += 5;
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^T ");
-   offset += 3;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Toggle TX ");
-   offset += 10;
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^H ");
-   offset += 3;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Halt TX immed.");
-}
-
-static void print_status(void) {
-   int offset = 0;
-
-   // callsign
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyCall:");
-   offset += 8;
-   printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "%s", mycall);
-   offset += strlen(mycall);
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
-   offset += 2;
-
-   // grid square
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyGrid:");
-   offset += 8;
-   printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "%s", gridsquare);
-   offset += strlen(gridsquare);
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
-   offset += 2;
-
-   // TX enabled status
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[");
-   offset++;
-   printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "TX:");
-   offset += 3;
-
-   if (tx_enabled) {
-      printf_tb(offset, height - 1, TB_RED|TB_BOLD, 0, "ON");
-      offset += 2;
-   } else {
-      printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "OFF");
-      offset += 3;
-   }
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
-   offset += 2;
-
-   // show bands with TX enabled, from yajl tree...
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[");
-   offset++;
-   printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "TXBand:");
-   offset += 7;
-
-   if (active_band != 0) {
-      printf_tb(offset, height - 1, TB_RED|TB_BOLD, 0, "%dm", active_band);
-      offset += 3;
-   }
-
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
-   offset += 2;
-
-   
-   // print the PTT status
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[");
-   offset++;
-   printf_tb(offset, height - 1, TB_GREEN|TB_BOLD, 0, "PTT:");
-   offset += 4;
-#if	0
-   // Explode the list of radios actively PTTing
-   for (int i = 0; i < max_rigs; i++) {
-      if (rigs[i].ptt_active) {
-         printf_tb(offset, height - 1, TB_RED|TB_BOLD, 0, "%d", i);
-      }
-   }
-#endif
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
-   offset += 2;
-   tb_present();
-}
-
-static void print_input(void) {
-   // XXX: Draw the input text area
-}
-
-void redraw_screen(void) {
-   print_help();
-   ta_redraw(msgbox);
-   print_input();
-   print_status();
-   tb_present();
-}
-
 void ui_resize_window(void) {
    height = tb_height();
    width = tb_width();
@@ -280,15 +161,12 @@ void ui_resize_window(void) {
       dying = 1;
       exit(200);
    } else {
-      ta_printf(msgbox, "$WHITE$[$GREEN$display$WHITE$] Resolution %dx%d is acceptable!", width, height);
+      log_send(mainlog, LOG_NOTICE, "display resolution %dx%d is acceptable!", width, height);
    }
-
-// XXX: Need a way to call this automatically for all TextAreas?
-   msgbox->top = 1;
-   msgbox->bottom = height - 3;
-
    line_status = height - 1;
    line_input = height - 2;
+   ta_resize_all();
+   redraw_screen();
 }
 
 void ui_shutdown(void) {
@@ -297,8 +175,8 @@ void ui_shutdown(void) {
 
    // display a notice that we are exiting and to be patient...
    tb_clear();
-   ta_printf(msgbox, "$RED$ft8goblin exiting, please wait for subpprocesses to halt...");
-   tb_present();
+   log_send(mainlog, LOG_NOTICE, "ft8goblin exiting, please wait for subprocs to halt...");
+//   modal_dialog(0, TB_WHITE|TB_BOLD, TB_RED, TB_BLACK, TB_RED|BOLD, "SHUTTING DOWN", TB_RED|TB_BOLD, TB_BLACK, "ft8goblin is shutting down, please wait...");
 
    // stop libev stuff...
    // libev_shutdown();
@@ -308,9 +186,6 @@ void ui_shutdown(void) {
 
    // shut down termbox
    tb_shutdown();
-
-   printf("ft8goblin exited cleanly!\n");
-   exit(0);
 }
 
 void ta_destroy(TextArea *ta) {
@@ -323,6 +198,18 @@ void ta_destroy(TextArea *ta) {
       ta->scrollback = NULL;
    }
 
+   for (int i = 0; i < MAX_TEXTAREAS; i++) {
+      if (ta_textareas[i] == ta) {
+         ta_textareas[i] = NULL;
+         i++;
+         // Work backwards from the end, bumping all the entries down one..
+         for (int j = MAX_TEXTAREAS; j < i; j--) {
+            log_send(mainlog, LOG_DEBUG, "Moving ta_textareas slot %d to slot %i", j, j - 1);
+            ta_textareas[j - 1] = ta_textareas[j];
+         }
+         break;
+      }
+   }
    free(ta);
 }
 
@@ -340,15 +227,62 @@ TextArea *ta_init(int scrollback_lines) {
    ta->scrollback_lines = scrollback_lines;
 
    if (ta->scrollback_lines == -1) {
-      ta->scrollback_lines = tb_height() * 5;
-      printf("ui/scrollback-lines not set or unparsable in configuration. defaulting to %d", ta->scrollback_lines);
+      log_send(mainlog, LOG_CRIT, "ta_init: refusing to create TextArea with no scrollback as this can't hold text!");
+      return NULL;
    }
    ta->scrollback = rb_create(ta->scrollback_lines);
 
+   // add to end of ta_textareas array
+   for (int i = 0; i < MAX_TEXTAREAS; i++) {
+      if (ta_textareas[i] == NULL) {
+         ta_textareas[i] = ta;
+         break;
+      }
+   }
    return ta;
+}
+
+// redraw *ALL* textareas
+void ta_redraw_all(void) {
+   for (int i = 0; i < MAX_TEXTAREAS; i++) {
+      ta_redraw(ta_textareas[i]);
+   }
+}
+
+// send resize all textareas
+void ta_resize_all(void) {
+   for (int i = 0; i < MAX_TEXTAREAS; i++) {
+      ta_resize(ta_textareas[i]);
+   }
 }
 
 void ui_init(void) {
    tb_init();
-   msgbox = ta_init(cfg_get_int(cfg, "ui/scrollback-lines"));
+}
+
+
+//////////
+// ToDo //
+//////////
+// Returns: index of button pressed. (Buttons are 0 = OK, 1 = CANCEL, 2 = OK|CANCEL, 3 = OK|CANCEL|HELP)
+int modal_dialog(int buttons, int border_fg, int border_bg, int title_fg, int title_bg, const char *title, int text_fg, int text_bg, const char *fmt, ...) {
+   va_list ap;
+
+   if (fmt != NULL) {
+      va_start(ap, fmt);
+
+      // print the buffer into temporary memory
+      char buf[2000];		// an 80x25 screen is 2000 characters..
+      memset(buf, 0, 2000);
+      vsnprintf(buf, 2000, fmt, ap);
+      // we should check return value and errno... ;)
+
+      // XXX: Display into the the modal window
+      va_end(ap);
+   } else {
+      // handle setting up a dialog for "other" uses (not yet supported)
+      log_send(mainlog, LOG_CRIT, "modal_dialog doesn't yet support use other than simple alerts. (fmt is NULL). Please fix your code or improve the library!");
+      return ENOSYS;
+   }
+   return 0;
 }

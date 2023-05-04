@@ -55,12 +55,12 @@ yajl_val parse_config(const char *cfgfile) {
 
     /* file read error handling */
     if (rd == 0 && !feof(fp)) {
-       fprintf(stderr, "%s: error encountered on file read\n", __FUNCTION__);
+       fprintf(stderr, "parse_config: error encountered on file read\n");
        free(data);
        fclose(fp);
        return NULL;
     } else if (rd < cfg_len) {
-       fprintf(stderr, "%s: config file too big\n", __FUNCTION__);
+       fprintf(stderr, "parse_config: config file too big\n");
        free(data);
        fclose(fp);
        return NULL;
@@ -75,7 +75,7 @@ yajl_val parse_config(const char *cfgfile) {
 
     /* parse error handling */
     if (node == NULL) {
-        fprintf(stderr, "%s<%s>: parse_error: ", __FUNCTION__, cfgfile);
+        fprintf(stderr, "parse_config(%s): parse_error: ", cfgfile);
 
         if (strlen(errbuf))
            fprintf(stderr, " %s", errbuf);
@@ -120,7 +120,7 @@ yajl_val load_config(void) {
       // find the logpath...
       memset(buf, 0, 4096);
       snprintf(buf, 4095, "logging/%s-logpath", progname);
-      char *bp = cfg_get_str(cfg, buf);
+      char *bp = (char *)cfg_get_str(cfg, buf);
 
       if (bp != NULL) {
          dict_add(runtime_cfg, "loglevel", bp);
@@ -131,7 +131,7 @@ yajl_val load_config(void) {
       // repeat for pidfile...
       memset(buf, 0, 4096);
       snprintf(buf, 4095, "logging/%s-pidfile", progname);
-      *bp = cfg_get_str(cfg, buf);
+      bp = (char *)cfg_get_str(cfg, buf);
 
       if (bp != NULL) {
          dict_add(runtime_cfg, "pidfile", bp);
@@ -144,7 +144,7 @@ yajl_val load_config(void) {
       // repeat for daemonize flag...
       memset(buf, 0, 4096);
       snprintf(buf, 4095, "logging/%s-logpath", progname);
-      *bp = cfg_get_str(cfg, buf);
+      bp = (char *)cfg_get_str(cfg, buf);
 
       if (bp != NULL) {
          dict_add(runtime_cfg, "daemonize", bp);
@@ -160,12 +160,12 @@ yajl_val load_config(void) {
 // This function shouldn't be exported
 static char **cfg_mkpath(char *path, char **rpath) {
    if (rpath == NULL) {
-      fprintf(stderr, "%s: rpath MUST not be NULL\n", __FUNCTION__);
+      fprintf(stderr, "cfg_mkpath: rpath MUST not be NULL\n");
       return NULL;
    }
 
    if (path == NULL) {
-      fprintf(stderr, "%s: calling with a NULL path makes no sense!\n", __FUNCTION__);
+      fprintf(stderr, "cfg_mkpath: calling with a NULL path makes no sense!\n");
       return NULL;
    }
 
@@ -177,7 +177,7 @@ static char **cfg_mkpath(char *path, char **rpath) {
    int ai = 0;
 
    if ((p = strtok_r(path, "/.", &rp)) == NULL) {
-      fprintf(stderr, "%s: error parsing path %s\n", __FUNCTION__, path);
+      fprintf(stderr, "cfg_mkpath: error parsing path %s\n", path);
       return NULL;
    }
    rpath[ai] = p;
@@ -200,7 +200,7 @@ int cfg_get_int(yajl_val cfg, const char *path) {
    int rv = -1;
 
    if (path == NULL) {
-      fprintf(stderr, "%s called with path == NULL, bailing!", __FUNCTION__);
+      fprintf(stderr, "cfg_get_int: called with path == NULL, bailing!");
       return rv;
    }
 
@@ -215,7 +215,7 @@ int cfg_get_int(yajl_val cfg, const char *path) {
       rv = YAJL_GET_INTEGER(v);
 //      fprintf(stderr, "%s: <%s> = %d\n", __FUNCTION__, path, rv);
    } else {
-      fprintf(stderr, "%s: no such node: %s\n", __FUNCTION__, path);
+      fprintf(stderr, "cfg_get_int: no such node: %s\n", path);
    }
 
    return rv;
@@ -233,9 +233,9 @@ const char *cfg_get_str(yajl_val cfg, const char *path) {
 
    if (v) {
       rv = YAJL_GET_STRING(v);
-//      fprintf(stderr, "%s: <%s> = %s\n", __FUNCTION__, path, rv);
+//      fprintf(stderr, "cfg_get_str: <%s> = %s\n", path, rv);
    } else {
-      fprintf(stderr, "%s: no such node: %s\n", __FUNCTION__, path);
+      fprintf(stderr, "cfg_get_str: no such node: %s\n", path);
    }
 
    return rv;
