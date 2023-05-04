@@ -176,7 +176,7 @@ sigcapd: ${sigcapd_real_objs}
 obj/sigcapd.o: sigcapd.c
 	${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
 
-obj/%.o: %.c
+obj/%.o: %.c $(wildcard *.h)
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} -o $@ -c $<
 
