@@ -243,5 +243,8 @@ int main(int argc, char **argv) {
    if (!load_config())
       exit_fix_config();
 
+   while(1) {
+      sleep(100);
+   }
    return 0;
 }

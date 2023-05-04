@@ -1,5 +1,5 @@
-#if	!defined(_ui_input_h)
-#define	_ui_input_h
+#if	!defined(_tui_input_h)
+#define	_tui_input_h
 #include <termbox2.h>
 
 #define	MAX_KEY_ID	0xffff
@@ -13,11 +13,11 @@ extern "C" {
    } Keymap;
 
    extern void process_input(struct tb_event *evt);
-   extern int ui_io_watcher_init(void);
+   extern int tui_io_watcher_init(void);
    extern struct ev_loop *loop;
    extern time_t now;
 #ifdef __cplusplus
 };
 #endif
 
-#endif	// !defined(_ui_input_h)
+#endif	// !defined(_tui_input_h)

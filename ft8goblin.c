@@ -1,7 +1,7 @@
 #include "config.h"
 #include "subproc.h"
 #include "util.h"
-#include "ui.h"
+#include "tui.h"
 #include "logger.h"
 #include "watch.h"
 #include "daemon.h"
@@ -180,11 +180,11 @@ int main(int argc, char **argv) {
    mainlog = log_open(dict_get(runtime_cfg, "logpath", "file://ft8goblin.log"));
    log_send(mainlog, LOG_NOTICE, "ft8goblin starting up!");
 
-   ui_init();
+   tui_init();
    // create the default TextArea for messages
    msgbox = ta_init(cfg_get_int(cfg, "ui/scrollback-lines"));
-   ui_resize_window();
-   ui_io_watcher_init();
+   tui_resize_window();
+   tui_io_watcher_init();
    ta_printf(msgbox, "$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
 
    // Draw the initial screen
@@ -215,7 +215,7 @@ int main(int argc, char **argv) {
       dying = 1;
    }
 
-   ui_shutdown();
+   tui_shutdown();
    log_close(mainlog);
    mainlog = NULL;
    fini(0);			// remove pidfile, etc

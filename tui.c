@@ -1,15 +1,18 @@
 /*
- * Our overly complicated text based user interface!
+ * Our overly complicated text based user interface based on termbox2!
+ *
+ * An effort is being made to make this reusable for other programs...
  *
  * Widgets Available:
  *	TextArea 	Scrollable text area, wrapped around termbox2 (with autoscroll option)
  *	Menu		Multi-level menus, with history support, similar to WANG mainframes.
+ *	InputArea	Single line input box with cursor controls and history.
  *
  */
 #include <errno.h>
 #include <termbox2.h>
 #include "config.h"
-#include "ui.h"
+#include "tui.h"
 #include "subproc.h"
 #include "logger.h"
 
@@ -150,7 +153,7 @@ void ta_printf(TextArea *ta, const char *fmt, ...) {
     ta_append(ta, buf);
 }
 
-void ui_resize_window(void) {
+void tui_resize_window(void) {
    height = tb_height();
    width = tb_width();
 
@@ -171,7 +174,7 @@ void ui_resize_window(void) {
    redraw_screen();
 }
 
-void ui_shutdown(void) {
+void tui_shutdown(void) {
    // Tear down to exit
    dying = 1;
 
@@ -218,7 +221,7 @@ TextArea *ta_init(int scrollback_lines) {
    TextArea *ta = NULL;
 
    if ((ta = malloc(sizeof(TextArea))) == NULL) {
-      fprintf(stderr, "ui_textarea_init: out of memory!\n");
+      fprintf(stderr, "ta_init: out of memory!\n");
       exit(ENOMEM);
    }
 
@@ -231,7 +234,7 @@ TextArea *ta_init(int scrollback_lines) {
       log_send(mainlog, LOG_CRIT, "ta_init: refusing to create TextArea with no scrollback as this can't hold text!");
       return NULL;
    }
-   ta->scrollback = rb_create(ta->scrollback_lines);
+   ta->scrollback = rb_create(ta->scrollback_lines, "TextArea scrollback");
 
    // add to end of ta_textareas array
    for (int i = 0; i < MAX_TEXTAREAS; i++) {
@@ -257,7 +260,7 @@ void ta_resize_all(void) {
    }
 }
 
-void ui_init(void) {
+void tui_init(void) {
    tb_init();
 }
 

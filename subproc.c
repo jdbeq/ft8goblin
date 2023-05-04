@@ -7,6 +7,7 @@
  *	* If zero (success) exit status, immediately restart
  *	* If non-zero (failure) exit status, delay randomly up to 15 seconds before restarting process
  *	* If a process has crashed more than cfg:supervisor/max-crashes in the last cfg:supervisor/max-crash-time then don't bother respawning it..
+ * XXX: Add more error checking!
  */
 #include "config.h"
 #include <stdio.h>
@@ -17,9 +18,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <termbox2.h>
 #include "subproc.h"
-#include "ui.h"
+#include "tui.h"
 #include "logger.h"
 
 extern TextArea *msgbox;
@@ -29,17 +32,94 @@ static int max_subprocess = 0;
 // this shouldn't be exported as we'll soon provide utility functions for it
 static subproc_t *children[MAX_SUBPROC];
 
+bool subproc_start(int slot) {
+   if (slot < 0 || slot > max_subprocess) {
+      log_send(mainlog, LOG_CRIT, "subproc_start called with slot %d that isn't between 0 and max_subprocess (%d), cancelling!", slot, max_subprocess);
+      return false;
+   }
+
+   subproc_t *p = children[slot];
+
+   // well look here! we have a commandline to execute!
+   if ((p->argc > 0) && (p->argv[0] != NULL)) {
+      int pid = 0;
+      // XXX: fork and create the subprocess
+
+      // if it was successful, store it in the process
+      if (pid > 1) {
+         p->pid = pid;
+         p->needs_restarted = 0;
+         p->restart_time = 0;
+      } else {
+         // otherwise cry about it to the log
+         log_send(mainlog, LOG_CRIT, "subproc_start(%d) failed! got pid=%d which isnt valid.", slot, pid);
+      }
+   }
+   return true;
+}
+
+// Create a new subprocess, based on the details provided and start it
+int subproc_create(const char *name, const char **argv, int argc) {
+   subproc_t *sp = NULL;
+
+   if (name == NULL || argv == NULL || argc <= 0) {
+      log_send(mainlog, LOG_CRIT, "subproc_create: got invalid (NULL) (argc: %d) arguments.", argc);
+      return -1;
+   }
+
+   // figure out our subprocess slot...
+   int myslot = -1;
+
+   for (int x = 0; x < max_subprocess; x++) {
+      if (children[x] == NULL) {
+         children[x] = sp;
+         myslot = x;
+      }
+   }
+
+   if ((sp = malloc(sizeof(subproc_t))) == NULL) {
+      fprintf(stderr, "subproc_create: out of memory!\n");
+      exit(ENOMEM);
+   }
+   // and zero it!
+   memset(sp, 0, sizeof(subproc_t));
+
+   // store the name of the process
+   size_t name_sz = sizeof(name);
+   size_t copylen = ((strlen(name) > (name_sz - 1)) ? (name_sz - 1) : strlen(name));
+   memcpy(sp->name, name, copylen);
+
+   // and duplicate the arguments
+   sp->argc = argc;
+   for (int i = 0; i < argc; i++) {
+      if (argv[i] != NULL) {
+         sp->argv[i] = strdup(argv[i]);
+      }
+   }
+
+   // and start the process slot we created above!
+   subproc_start(myslot);
+   return -1;
+}
+
 static void subproc_delete(int i) {
    if (children[i] == NULL) {
       ta_printf(msgbox, "$RED$subproc_delete: invalid child process %i (NULL) requested for deletion", i);
       return;
    }
 
-   if (max_subprocess > 0)
-      max_subprocess--;
+   // if there's a commandline stored, free it
+   for (int x = 0; x < children[i]->argc; x++) {
+      if (children[i]->argv[x] != NULL) {
+         free(children[i]->argv[x]);
+      }
+   }
 
    free(children[i]);
    children[i] = NULL;
+
+   if (max_subprocess > 0)
+      max_subprocess--;
 }
 
 int subproc_killall(int signum) {
@@ -78,7 +158,9 @@ int subproc_killall(int signum) {
       children[i]->needs_restarted = 0;
       children[i]->watchdog_start = 0;
       children[i]->watchdog_events = 0;
-      if (children[i]->pid > 1) {
+
+      // catch obvious errors (init is pid 1)
+      if (children[i]->pid <= 1) {
          continue;
       }
 
@@ -191,8 +273,8 @@ int subproc_check_all(void) {
         log_send(mainlog, LOG_DEBUG, "unexpected return valid %d from waitpid(%d) for subproc %d", pid, children[i]->pid, i);
       }
 
-      // schedule 3-15 seconds in the future..
-      if (children[i]->needs_restarted) {
+      // schedule 3-15 seconds in the future, if not already set...
+      if (children[i]->needs_restarted && (children[i]->restart_time == 0)) {
          children[i]->restart_time = get_random_interval(3, 15) + now;
          log_send(mainlog, LOG_CRIT, "subprocess %d (%s) exited, registering it for restart in %lu seconds", i, children[i]->name, (children[i]->restart_time - now));
       }

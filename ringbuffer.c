@@ -9,10 +9,12 @@
 #include "ringbuffer.h"
 #include "logger.h"
 
-rb_buffer_t *rb_create(int max_size) {
+rb_buffer_t *rb_create(int max_size, const char *name) {
     rb_buffer_t *buffer = malloc(sizeof(rb_buffer_t));
+    size_t name_len = strnlen(name, sizeof(buffer->name)) + 1; // add one for null terminator
+    char *buffer_name = malloc(name_len);
 
-    if (buffer == NULL) {
+    if (buffer == NULL || buffer_name == NULL) {
        fprintf(stderr, "rb_create: out of memory!\n");
        exit(ENOMEM);
     }
@@ -21,6 +23,9 @@ rb_buffer_t *rb_create(int max_size) {
     buffer->tail = NULL;
     buffer->max_size = max_size;
     buffer->current_size = 0;
+    strncpy(buffer_name, name, name_len);
+    buffer_name[name_len - 1] = '\0'; // make sure name is null-terminated
+    buffer->name = buffer_name;
     return buffer;
 }
 

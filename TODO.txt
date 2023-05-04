@@ -1,6 +1,6 @@
 These are not in any particular order, but stuff near the bottom is probably far off...
 ------
-
+* Make sure that things in common_objs aren't calling termbox or tuilib bits
 * Finish TextArea implementation
 * Finish InputBox implementation
 * Complete ft8decoder using ft8lib for ft4 and ft8

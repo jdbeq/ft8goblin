@@ -26,7 +26,9 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -pedantic #-Werror
+ERROR_FLAGS := -Werror -Wno-error=int-conversion
+WARN_FLAGS := -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -pedantic
+CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall ${WARN_FLAGS} ${ERROR_FLAGS}
 LDFLAGS += $(foreach x,${common_libs},-l${x}) -fsanitize=address
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
 ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})
@@ -41,13 +43,14 @@ common_objs += daemon.o
 common_objs += dict.o
 common_objs += ipc.o
 common_objs += logger.o
+common_objs += memory.o
 common_objs += ringbuffer.o
 common_objs += util.o
 
-####################
-# RUI: rustyaxe UI #
-####################
-rui_objs += ui.o ui-input.o ui-menu.o
+################
+# TUI: text UI #
+################
+tui_objs += tui.o tui-input.o tui-menu.o
 
 ###########
 # FT8 TUI #
@@ -56,7 +59,7 @@ rui_objs += ui.o ui-input.o ui-menu.o
 ft8goblin_objs += sql.o
 
 # tty user interface
-ft8goblin_objs += ${rui_objs} 
+ft8goblin_objs += ${tui_objs} 
 
 # FCC ULS database (US hams)
 ft8goblin_objs += fcc-db.o

@@ -2,7 +2,7 @@
 #include <termbox2.h>
 #include "config.h"
 #include "util.h"
-#include "ui.h"
+#include "tui.h"
 
 extern TextArea *msgbox;
 menu_history_t menu_history[MAX_MENULEVEL];	// history for ESC (go back) in menus ;)

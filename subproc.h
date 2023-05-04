@@ -11,7 +11,8 @@ extern "C" {
    struct subproc {
       int 		pid;			// host process id
       char		name[64];		// subprocess name (for subproc_list() etc)
-      char		*cmd_line[128];		// pointer to the arguments needed to execute the process
+      char		*argv[128];		// pointer to the arguments needed to execute the process
+      int		argc;			// arguments counter
       time_t		restart_time;		// when should we restart?
       time_t		watchdog_start;		// watchdog is started if the process crashes, it expires after cfg:supervisor/max-crash-time.
                                                 // when active, watchdog_events tracks the number of crashes

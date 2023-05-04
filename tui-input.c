@@ -4,11 +4,10 @@
 // XXX: We need to make keymaps a loadable thing, so each menu, pane, etc can select its own keymap
 // XXX: This would make things a lot more pleasant for everyone!
 #include "config.h"
-#include "ui.h"
+#include "tui.h"
 #include "util.h"
 #include "logger.h"
 #include "subproc.h"
-#include <termbox2.h>
 #include <ev.h>
 
 static ev_io termbox_watcher, termbox_resize_watcher;
@@ -68,7 +67,7 @@ void process_input(struct tb_event *evt) {
          ta_printf(msgbox, "$RED$Goodbye! Hope you had a nice visit!");
          log_send(mainlog, LOG_NOTICE, "ft8goblin shutting down...");
          dying = 1;
-         ui_shutdown();
+         tui_shutdown();
          exit(0);
          return;
       } else {      					// Nope - display the event data for debugging
@@ -77,7 +76,7 @@ void process_input(struct tb_event *evt) {
       }
    } else if (evt->type == TB_EVENT_RESIZE) {
       // change the stored dimensions/layout variables above
-      ui_resize_window();
+      tui_resize_window();
 
       // clear the screen buffer
       tb_clear();
@@ -107,7 +106,7 @@ static void periodic_cb(EV_P_ ev_timer *w, int revents) {
    redraw_screen();
 }
 
-int ui_io_watcher_init(void) {
+int tui_io_watcher_init(void) {
    struct ev_loop *loop = EV_DEFAULT;
    int rv = 0;
    int fd_tb_tty = -1, fd_tb_resize = -1;

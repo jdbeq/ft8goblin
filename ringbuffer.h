@@ -13,13 +13,14 @@ extern "C" {
    } rb_node_t;
 
    typedef struct rb_buffer {
+      size_t max_size;
+      size_t current_size;
       rb_node_t *head;
       rb_node_t *tail;
-      int max_size;
-      int current_size;
+      char *name; 				// name of the buffer (for debugging)
    } rb_buffer_t;
 
-   extern rb_buffer_t* rb_create(int max_size);
+   extern rb_buffer_t* rb_create(int max_size, const char *name);
    extern void rb_destroy(rb_buffer_t* buffer);
    extern int rb_add(rb_buffer_t* buffer, void* data, int needs_freed);
    extern void* rb_get_most_recent(rb_buffer_t* buffer);

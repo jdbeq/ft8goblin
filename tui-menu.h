@@ -1,7 +1,5 @@
-#if	!defined(_menu_h)
-#define	_menu_h
-
-#include "menu.h"
+#if	!defined(_tui_menu_h)
+#define	_tui_menu_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,7 +46,7 @@ extern "C" {
    extern int menu_close(void);
    extern int menu_show(menu_t *menu, int item);
 
-   // globals from menu.c
+   // globals from tui-menu.c
    extern menu_history_t menu_history[MAX_MENULEVEL];
    extern int menu_level;
    extern menu_item_t menu_main_items[];
@@ -58,4 +56,4 @@ extern "C" {
 #ifdef __cplusplus
 };
 #endif
-#endif	// !defined(_menu_h)
+#endif	// !defined(_tui_menu_h)

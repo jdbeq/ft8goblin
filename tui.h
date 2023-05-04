@@ -1,11 +1,11 @@
-#if	!defined(_ui_h)
-#define	_ui_h
+#if	!defined(_tui_h)
+#define	_tui_h
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include "ui-menu.h"
-#include "ui-input.h"
+#include "tui-menu.h"
+#include "tui-input.h"
 #include "ringbuffer.h"
 
 #define	MAX_TEXTAREAS	6
@@ -40,10 +40,10 @@ extern "C" {
    extern int modal_dialog(int buttons, int border_fg, int border_bg, int title_fg, int title_bg, const char *title, int text_fg, int text_bg, const char *fmt, ...);
 
    // ui functions
-   extern void ui_init(void);
-   extern void ui_resize_window(void);
+   extern void tui_init(void);
+   extern void tui_resize_window(void);
    extern void redraw_screen(void);
-   extern void ui_shutdown(void);
+   extern void tui_shutdown(void);
 
    /////
    extern int scrollback_lines;	// this is set in main below...
@@ -62,4 +62,4 @@ extern "C" {
 #ifdef __cplusplus
 };
 #endif
-#endif	// !defined(_ui_h)
+#endif	// !defined(_tui_h)
