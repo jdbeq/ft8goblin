@@ -73,23 +73,34 @@ int subproc_killall(int signum) {
       log_send(mainlog, LOG_NOTICE, "sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
       tb_present();
 
+      // disable watchdog / pending restarts
+      children[i]->restart_time = 0;
+      children[i]->needs_restarted = 0;
+      children[i]->watchdog_start = 0;
+      children[i]->watchdog_events = 0;
+      if (children[i]->pid > 1) {
+         continue;
+      }
+
       // if successfully sent signal, increment rv, so we'll sleep if called from subproc_shutdown()
       if (kill(children[i]->pid, signum) == 0)
          rv++;
 
+      // Try waitpid(..., WNOHANG) to see if the pid is still alive
       time_t wstart = time(NULL);
       int wstatus;
-      int rv = waitpid(children[i]->pid, &wstatus, WNOHANG);
+      int pid = waitpid(children[i]->pid, &wstatus, WNOHANG);
 
-      if (rv == -1) {
-        // an error occured
+      // An error occured
+      if (pid == -1) {
         continue;
-      } else if (rv == 0) {
-        // it didn't exit yet...
+      } else if (pid == 0) {
+        // The process is still running
         ta_printf(msgbox, "$YELLOW$-- no response, sleeping 3 seconds before next attempt...");
         sleep(3);
         continue;
-      } else {
+      } else if (pid == children[i]->pid) {
+        // the process has terminated
         // we can delete the subproc and avoid sending further signals to a dead PID...
         subproc_delete(i);
       }
@@ -143,7 +154,6 @@ int subproc_check_all(void) {
         continue;
       } else if (children[i]->pid == pid) {
         // process has exited
-        log_send(mainlog, LOG_CRIT, "subprocess %d (%s) exited, registering it for restart in %lu seconds", i, children[i]->name, get_random_interval(3, 15));
         // mark the PID as invalid and needs_restarted
         children[i]->pid = -1;
         children[i]->needs_restarted = 1;
@@ -158,12 +168,12 @@ int subproc_check_all(void) {
         } else if (children[i]->watchdog_start > 0) {
            // has the watchdog expired?
            if (children[i]->watchdog_start + watchdog_expire <= now) {
-              // has the 
+              // has there been a reasonable number of watchdog events?
               if (children[i]->watchdog_events < watchdog_max_events) {
                  log_send(mainlog, LOG_NOTICE, "subprocess %d (%s) has restored normal operation. It crashed %d times in %lu seconds.", i, children[i]->name, children[i]->watchdog_events, (now - children[i]->watchdog_start));
                  children[i]->watchdog_start = 0;
                  children[i]->watchdog_events = 0;
-              } else {
+              } else { // disable the service
                  log_send(mainlog, LOG_CRIT, "subprocess %d (%s) has crashed %d times in %lu seconds. disabling restarts", i, children[i]->name, children[i]->watchdog_events, (now - children[i]->watchdog_start));
               }
 
@@ -171,15 +181,20 @@ int subproc_check_all(void) {
               children[i]->needs_restarted = 0;
               children[i]->restart_time = 0;
            }
-        } else { // no watchdog is still active
+        } else { // watchdog is still active
            children[i]->needs_restarted = 1;
+           children[i]->watchdog_events++;
            log_send(mainlog, LOG_DEBUG, "subprocess %d (%s) has crashed. This is the %d time in %lu seconds. It will be disabled after %d times.", i, children[i]->name, children[i]->watchdog_events, (now - children[i]->watchdog_start), watchdog_max_events);
         }
 
-        // schedule 3-15 seconds in the future..
-        children[i]->restart_time = get_random_interval(3, 15) + now;
       } else {
         log_send(mainlog, LOG_DEBUG, "unexpected return valid %d from waitpid(%d) for subproc %d", pid, children[i]->pid, i);
+      }
+
+      // schedule 3-15 seconds in the future..
+      if (children[i]->needs_restarted) {
+         children[i]->restart_time = get_random_interval(3, 15) + now;
+         log_send(mainlog, LOG_CRIT, "subprocess %d (%s) exited, registering it for restart in %lu seconds", i, children[i]->name, (children[i]->restart_time - now));
       }
    }
    return rv;

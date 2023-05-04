@@ -3,11 +3,12 @@
 //   
 // XXX: We need to make keymaps a loadable thing, so each menu, pane, etc can select its own keymap
 // XXX: This would make things a lot more pleasant for everyone!
-#include <termbox2.h>
 #include "config.h"
 #include "ui.h"
 #include "util.h"
 #include "logger.h"
+#include "subproc.h"
+#include <termbox2.h>
 #include <ev.h>
 
 static ev_io termbox_watcher, termbox_resize_watcher;
@@ -98,8 +99,11 @@ static void termbox_cb(EV_P_ ev_io *w, int revents) {
    process_input(&evt);
 }
 
+// XXX: this belongs in the user code and passed as part of
+// XXX: setup. Please fix this!
 static void periodic_cb(EV_P_ ev_timer *w, int revents) {
    now = time(NULL);
+   subproc_check_all();
    redraw_screen();
 }
 
