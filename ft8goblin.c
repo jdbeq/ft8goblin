@@ -178,6 +178,7 @@ int main(int argc, char **argv) {
    gridsquare = cfg_get_str(cfg, "site/gridsquare");
 
    mainlog = log_open(dict_get(runtime_cfg, "logpath", "file://ft8goblin.log"));
+   log_send(mainlog, LOG_NOTICE, "ft8goblin starting up!");
 
    ui_init();
    // create the default TextArea for messages
@@ -185,7 +186,6 @@ int main(int argc, char **argv) {
    ui_resize_window();
    ui_io_watcher_init();
    ta_printf(msgbox, "$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
-   log_send(mainlog, LOG_NOTICE, "ft8goblin starting up!");
 
    // Draw the initial screen
    redraw_screen();

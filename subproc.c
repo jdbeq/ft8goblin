@@ -1,3 +1,4 @@
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,10 +7,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/wait.h>
-#include "config.h"
-#include "termbox2/termbox2.h"
+#include <termbox2.h>
 #include "subproc.h"
 #include "ui.h"
+#include "logger.h"
 
 extern TextArea *msgbox;
 extern int y;			// from ui.c
@@ -48,6 +49,7 @@ int subproc_killall(int signum) {
 
    if (max_subprocess > MAX_SUBPROC) {
       ta_printf(msgbox, "$RED$subproc_killall: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", max_subprocess, MAX_SUBPROC);
+      log_send(mainlog, LOG_CRIT, "subproc_killall: max_subprocess (%d) > MAX_SUBPROC (%d), this is wrong!", max_subprocess, MAX_SUBPROC);
       tb_present();
       exit(200);
    }
@@ -55,6 +57,7 @@ int subproc_killall(int signum) {
    int i = 0;
    for (i = 0; i < max_subprocess; i++) {
       ta_printf(msgbox, "$YELLOW$sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
+      log_send(mainlog, LOG_NOTICE, "sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
       tb_present();
 
       // if successfully sent signal, increment rv, so we'll sleep if called from subproc_shutdown()
@@ -70,8 +73,8 @@ int subproc_killall(int signum) {
         continue;
       } else if (rv == 0) {
         // it didn't exit yet...
-//        ta_printf("$YELLOW$-- no response, sleeping 3 seconds before next attempt...");
-//        sleep(3);
+        ta_printf(msgbox, "$YELLOW$-- no response, sleeping 3 seconds before next attempt...");
+        sleep(3);
         continue;
       } else {
         // we can delete the subproc and avoid sending further signals to a dead PID...
