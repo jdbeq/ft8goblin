@@ -1,29 +1,5 @@
 {
    "version": 1,
-    "devices": [
-       {
-          "name": "usrp0",
-          "type": "uhd",
-          "devstring": "type=x300,subdev=B:0,RX2",
-          "log-dropped-frames": "false"
-       },
-       {
-          "name": "rtlsdr0",
-          "type": "rtlsdr",
-          "serial": "RTLV3001",
-          "log-dropped-frames": "false"
-       },
-       {
-          "name": "ft891",
-          "type": "hamlib",
-          "hamlib-model": 2,
-          "hamlib-path": "127.0.0.1:4532",
-          "tx-priority": 0,
-          "enable-tx": "true",
-          "tx-audio-device": "hwplug:0",
-          "rx-audio-device": "hwplug:0"
-       }
-   ],
    "ipc": {
       "udp-port-base": 12000,
       "udp-packet-size": 1472,
@@ -31,12 +7,15 @@
       "mode": "0660"
    },
    "logging": {
-      "decoder-loglevel": "notice",
-      "decoder-logpath": "file://ft8decoder-%b.log",
+      "decoderd-ft8-loglevel": "notice",
+      "decoderd-ft8-logpath": "file://decoderd-ft8.%b.log",
+      "encoderd-ft8-loglevel": "notice",
+      "encoderd-ft8-logpath": "file://encoderd-ft8.%b.log",
       "sigcapd-loglevel": "warning",
       "sigcapd-logpath": "file://sigcapd.log",
-      "ft8goblin-loglevel": "error",
-      "ft8goblin-logpath": "file://ft8goblin.log"
+      "ft8goblin-loglevel": "notice",
+      "ft8goblin-logpath": "file://ft8goblin.log",
+      "ft8goblin-pidfile": "ft8goblin.pid"
    },
    "site": {
       "mycall": "N0CALL",
@@ -67,19 +46,12 @@
       "gnis-db": "gnis.db",
       "use-gnis": "false"
    },
-
    "supervisor": {
       "max-crashes": 5,
       "max-crash-time": 60,
       "supervise-decoders": "true",
       "supervise-sigcapd": "true"
    },
-
-   "ft8decoder": {
-      "waterfall-update-main": 0.1,
-      "waterfall-update-band": 0.1
-   },
-
    "ui": {
       "color": "true",
       "autoscroll": "true",
@@ -94,6 +66,30 @@
          "watchfile-timed-reload": "false"
       }
    },
+   "devices": [
+       {
+          "name": "usrp0",
+          "type": "uhd",
+          "devstring": "type=x300,subdev=B:0,RX2",
+          "log-dropped-frames": "false"
+       },
+       {
+          "name": "rtlsdr0",
+          "type": "rtlsdr",
+          "serial": "RTLV3001",
+          "log-dropped-frames": "false"
+       },
+       {
+          "name": "ft891",
+          "type": "hamlib",
+          "hamlib-model": 2,
+          "hamlib-path": "127.0.0.1:4532",
+          "tx-priority": 0,
+          "enable-tx": "true",
+          "tx-audio-device": "hwplug:0",
+          "rx-audio-device": "hwplug:0"
+       }
+   ],
 
    "bands": [
       {
