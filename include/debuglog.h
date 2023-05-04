@@ -1,5 +1,5 @@
-#if	!defined(_logger_h)
-#define	_logger_h
+#if	!defined(_syslog_h)
+#define	_syslog_h
 #include <syslog.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -36,4 +36,4 @@ extern "C" {
 };
 #endif
 
-#endif	// !defined(_logger_h)
+#endif	// !defined(_syslog_h)

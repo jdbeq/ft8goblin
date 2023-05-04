@@ -3,19 +3,19 @@
    "ipc": {
       "udp-port-base": 12000,
       "udp-packet-size": 1472,
-      "path": "ft8goblin.pipe",
+      "path": "log/ft8goblin.pipe",
       "mode": "0660"
    },
    "logging": {
       "decoderd-ft8-loglevel": "notice",
-      "decoderd-ft8-logpath": "file://decoderd-ft8.%b.log",
+      "decoderd-ft8-logpath": "file://logs/decoderd-ft8.%b.log",
       "encoderd-ft8-loglevel": "notice",
-      "encoderd-ft8-logpath": "file://encoderd-ft8.%b.log",
+      "encoderd-ft8-logpath": "file://logs/encoderd-ft8.%b.log",
       "sigcapd-loglevel": "warning",
-      "sigcapd-logpath": "file://sigcapd.log",
-      "ft8goblin-loglevel": "notice",
-      "ft8goblin-logpath": "file://ft8goblin.log",
-      "ft8goblin-pidfile": "ft8goblin.pid"
+      "sigcapd-logpath": "file://logs/sigcapd.log",
+      "ft8goblin-loglevel": "debug",
+      "ft8goblin-logpath": "file://logs/ft8goblin.log",
+      "ft8goblin-pidfile": "logs/ft8goblin.pid"
    },
    "site": {
       "mycall": "N0CALL",
@@ -39,7 +39,7 @@
       "qrz-username": "xxxx",
       "qrz-password": "xxxx",
       "cache-online-lookups": "true",
-      "cache-expiry": "1d",
+      "cache-expiry": "3d",
       "cache-keep-stale-if-offline": "true"
    },
    "gnis-lookup": {
@@ -61,7 +61,7 @@
          "alert-new-dxcc": "true",
          "alert-new-grid": "false",
          "alert-watch-calls": "popup",
-         "watchfile": "watchlist.txt",
+         "watchfile": "etc/watchlist.txt",
          "watchfile-inotify": "true",
          "watchfile-timed-reload": "false"
       }

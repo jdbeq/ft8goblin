@@ -2,7 +2,7 @@
 #include "subproc.h"
 #include "util.h"
 #include "tui.h"
-#include "logger.h"
+#include "debuglog.h"
 #include "watch.h"
 #include "daemon.h"
 #include <stdio.h>

@@ -6,7 +6,7 @@
 #include "config.h"
 #include "tui.h"
 #include "util.h"
-#include "logger.h"
+#include "debuglog.h"
 #include "subproc.h"
 #include <ev.h>
 

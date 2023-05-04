@@ -7,7 +7,7 @@
 #include <errno.h>
 #include "config.h"
 #include "ringbuffer.h"
-#include "logger.h"
+#include "debuglog.h"
 
 rb_buffer_t *rb_create(int max_size, const char *name) {
     rb_buffer_t *buffer = malloc(sizeof(rb_buffer_t));

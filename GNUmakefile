@@ -40,9 +40,9 @@ subdirs += ft8_lib termbox2
 ##################
 common_objs += config.o
 common_objs += daemon.o
+common_objs += debuglog.o
 common_objs += dict.o
 common_objs += ipc.o
-common_objs += logger.o
 common_objs += memory.o
 common_objs += ringbuffer.o
 common_objs += util.o
@@ -155,7 +155,7 @@ clean:
 	@echo "Cleaning..."
 # Try to enforce cleaning before other rules
 ifneq ($(filter clean,$(MAKECMDGOALS)),)
-	$(shell ${RM} -f logs/*.log logs/*.debug run/*.pid run/*.pipe
+	$(shell ${RM} -f logs/*.log logs/*.debug run/*.pid run/*.pipe)
 	$(shell ${RM} -f ${real_bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs}  ${sigcapd_real_objs} ${extra_clean})
 endif
 

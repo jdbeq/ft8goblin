@@ -1,7 +1,7 @@
 #define	_daemon_cpp
 #include "config.h"
 #include "daemon.h"
-#include "logger.h"
+#include "debuglog.h"
 #include "dict.h"
 #include <signal.h>
 #include <errno.h>

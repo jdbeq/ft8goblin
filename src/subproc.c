@@ -23,7 +23,7 @@
 #include <termbox2.h>
 #include "subproc.h"
 #include "tui.h"
-#include "logger.h"
+#include "debuglog.h"
 
 extern TextArea *msgbox;
 extern int y;			// from ui.c

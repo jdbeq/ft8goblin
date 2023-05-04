@@ -1,7 +1,12 @@
+/*
+ * tui TextArea widget
+ *
+ * This code probably isn't very reusable yet. That's being worked on...
+ */
 #include "config.h"
 #include "tui.h"
 #include "subproc.h"
-#include "logger.h"
+#include "debuglog.h"
 #include <errno.h>
 #include <termbox2.h>
 extern TextArea *msgbox;

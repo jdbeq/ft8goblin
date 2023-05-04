@@ -1,6 +1,6 @@
 #include "config.h"
 #include "util.h"
-#include "logger.h"
+#include "debuglog.h"
 
 // toggle an intbool (<= 0 is off, >= 1 is on)
 void toggle(int *v) {

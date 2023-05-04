@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <regex.h>
 #include "watch.h"
-#include "logger.h"
+#include "debuglog.h"
 
 // Destroy the watch pointer w.
 // After this function returns ESUCCESS (0), all pointers
