@@ -30,7 +30,7 @@ menu_item_t menu_bands_items[] = {
    { "12 Meters FT8", "Toggle RX/TX on ft8-12m", NULL },
    { "10 Meters FT8", "Toggle RX/TX on ft8-10m", NULL },
    { "6 Meters FT8", "Toggle RX/TX on ft8-6m", NULL },
-   { NULL, NULL, NULL }
+   { (char *)NULL, (char *)NULL, 0 }
 };
 
 menu_t menu_bands = { "Band Settings", "Configure RX and TX bands here", menu_bands_items };
@@ -80,7 +80,7 @@ int menu_close(void) {
    return 0;
 }
 
-menu_window_t *menu_render_box(menu_t *menu, int menu_entries) {
+menu_window_t *menu_window_render(menu_t *menu, int menu_entries) {
     menu_window_t *wp = NULL;
 
     if ((wp = malloc(sizeof(menu_window_t))) == NULL) {
@@ -96,7 +96,7 @@ menu_window_t *menu_render_box(menu_t *menu, int menu_entries) {
     return wp;
 }
 
-int menu_render_item(menu_window_t *mp, menu_t *menu, int menu_item) {
+int menu_item_render(menu_window_t *mp, menu_t *menu, int menu_item) {
     return 0;
 }
 
@@ -124,7 +124,7 @@ int menu_show(menu_t *menu, int item) {
    size_t mi_entries = (sizeof(ip) / sizeof(menu[0]));
 
    // render the outer dialog, with space for mi_entries or scrollbars
-   menu_window_t *mp = menu_render_box(menu, mi_entries);
+   menu_window_t *mp = menu_window_render(menu, mi_entries);
 
    // render each menu item into the menu
    for (size_t i = 0; i < mi_entries; i++) {

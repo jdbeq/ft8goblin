@@ -1,7 +1,7 @@
 #include "config.h"
 #include "logger.h"
 #include "util.h"
-
+// XXX: We should mirror log messages above a set priority into the msgbox TextArea if it exists ;)
 // from main program usually
 extern char *progname;
 extern int dying;

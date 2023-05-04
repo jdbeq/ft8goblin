@@ -8,6 +8,7 @@ extern "C" {
    extern void process_input(struct tb_event *evt);
    extern int ui_io_watcher_init(void);
    extern struct ev_loop *loop;
+   extern time_t now;
 #ifdef __cplusplus
 };
 #endif

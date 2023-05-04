@@ -7,6 +7,7 @@
 #include <errno.h>
 #include "config.h"
 #include "ringbuffer.h"
+#include "logger.h"
 
 rb_buffer_t *rb_create(int max_size) {
     rb_buffer_t *buffer = malloc(sizeof(rb_buffer_t));
@@ -51,6 +52,8 @@ int rb_add(rb_buffer_t *buffer, void *data, int needs_freed) {
     node->timestamp = timestamp;
     node->next = NULL;
     node->needs_freed = needs_freed;
+
+    log_send(mainlog, LOG_DEBUG, "Adding entry %p to rb:%p, needs_freed: %d", data, buffer, needs_freed);
 
     if (buffer->current_size == 0) {
         buffer->head = node;

@@ -26,7 +26,7 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-CFLAGS += -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall -Wno-unused-variable -Wno-unused-function #-Werror -pedantic
+CFLAGS += -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -pedantic #-Werror
 LDFLAGS += $(foreach x,${common_libs},-l${x})
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
 ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})

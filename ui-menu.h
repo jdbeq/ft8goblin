@@ -43,8 +43,8 @@ extern "C" {
    extern int menu_history_clear(void);
    extern void menu_history_push(menu_t *menu, int item);
    extern void menu_history_pop(void);
-   extern menu_window_t *menu_render_box(menu_t *menu, int menu_entries);
-   extern int menu_render_item(menu_window_t *mp, menu_t *menu, int menu_item);
+   extern menu_window_t *menu_window_render(menu_t *menu, int menu_entries);
+   extern int menu_item_render(menu_window_t *mp, menu_t *menu, int menu_item);
    extern int menu_close(void);
    extern int menu_show(menu_t *menu, int item);
 

@@ -22,13 +22,13 @@ int daemonize(void) {
    pidfile = dict_get(runtime_cfg, "pidfile", NULL);
 
    if (pidfile == NULL) {
-      fprintf(stderr, "no pidfile specified in runtime:pidfile\n");
+      log_send(mainlog, LOG_CRIT, "no pidfile specified in runtime:pidfile\n");
       exit(255);
    }
 
    if (stat(pidfile, &sb) == 0) {
-      fprintf(stderr, "pidfile %s already exists, bailing!\n", pidfile);
-      _exit(1);
+      log_send(mainlog, LOG_CRIT, "pidfile %s already exists, bailing!\n", pidfile);
+      exit(1);
    }
 
    // are we configured to daemonize?
@@ -37,7 +37,7 @@ int daemonize(void) {
       pid_t pid = fork();
 
       if (pid < 0) {
-         fprintf(stderr, "daemonize: Unable to fork(): %d (%s)", errno, strerror(errno));
+         log_send(mainlog, LOG_CRIT, "daemonize: Unable to fork(): %d (%s)", errno, strerror(errno));
          exit(EXIT_FAILURE);
       } else if (pid > 0) {
          // parent exiting
@@ -50,7 +50,7 @@ int daemonize(void) {
       // attempt to fork our own session id
       pid_t sid = setsid();
       if (sid < 0) {
-         fprintf(stderr, "daemonize: Unable to create new SID for child process: %d (%s)", errno, strerror(errno));
+         log_send(mainlog, LOG_CRIT, "daemonize: Unable to create new SID for child process: %d (%s)", errno, strerror(errno));
          exit(EXIT_FAILURE);
       }
    }
@@ -58,13 +58,13 @@ int daemonize(void) {
    // save pid file
    pidfd = open(pidfile, O_RDWR | O_CREAT | O_SYNC, 0600);
    if (pidfd == -1) {
-      fprintf(stderr, "daemonize: opening pid file %s failed: %d (%s)", pidfile, errno, strerror(errno));
+      log_send(mainlog, LOG_CRIT, "daemonize: opening pid file %s failed: %d (%s)", pidfile, errno, strerror(errno));
       exit(EXIT_FAILURE);
    }
 
    // try to lock the pid file, so we can ensure only one instance runs
    if (lockf(pidfd, F_TLOCK, 0) != 0) {
-      fprintf(stderr, "daemonize: failed to lock pid file %s: %d (%s)", pidfile, errno, strerror(errno));
+      log_send(mainlog, LOG_CRIT, "daemonize: failed to lock pid file %s: %d (%s)", pidfile, errno, strerror(errno));
       unlink(pidfile);
       exit(EXIT_FAILURE);
    }
@@ -87,7 +87,7 @@ int daemonize(void) {
 }
 
 void fini(int status) {
-   log_send(mainlog, LOG_CRIT, "shutting down: %d", status);
+//   log_send(mainlog, LOG_CRIT, "shutting down: %d", status);
 //   dump_statistics(cfg->Get("path.statsfile", NULL));
    close(pidfd);
    pidfd = -1;
@@ -97,17 +97,17 @@ void fini(int status) {
 
 // Catch signals
 static void sighandler(int signum) {
-   log_send(mainlog, LOG_CRIT, "caught signal %d...", signum);
+//   log_send(mainlog, LOG_CRIT, "caught signal %d...", signum);
    switch(signum) {
       // Convenience signals
       case SIGHUP:
-         log_send(mainlog, LOG_INFO, "Reloading!");
+//         log_send(mainlog, LOG_INFO, "Reloading!");
          break;
       case SIGUSR1:
-         log_send(mainlog, LOG_INFO, "Dumping database to disk");
+//         log_send(mainlog, LOG_INFO, "Dumping database to disk");
          break;
       case SIGUSR2:
-         log_send(mainlog, LOG_INFO, "Dumping statistics to disk");
+//         log_send(mainlog, LOG_INFO, "Dumping statistics to disk");
 //         dump_statistics(cfg->Get("path.statsfile", NULL));
          break;
       // Fatal signals
@@ -116,7 +116,7 @@ static void sighandler(int signum) {
       case SIGKILL:
          fini(signum);
       default:
-         log_send(mainlog, LOG_CRIT, "Caught unknown signal %d", signum);
+//         log_send(mainlog, LOG_CRIT, "Caught unknown signal %d", signum);
          break;
    }
 }

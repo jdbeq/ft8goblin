@@ -175,7 +175,6 @@ void ui_shutdown(void) {
 
    // display a notice that we are exiting and to be patient...
    tb_clear();
-   log_send(mainlog, LOG_NOTICE, "ft8goblin exiting, please wait for subprocs to halt...");
 //   modal_dialog(0, TB_WHITE|TB_BOLD, TB_RED, TB_BLACK, TB_RED|BOLD, "SHUTTING DOWN", TB_RED|TB_BOLD, TB_BLACK, "ft8goblin is shutting down, please wait...");
 
    // stop libev stuff...
@@ -260,10 +259,10 @@ void ui_init(void) {
    tb_init();
 }
 
-
 //////////
 // ToDo //
 //////////
+
 // Returns: index of button pressed. (Buttons are 0 = OK, 1 = CANCEL, 2 = OK|CANCEL, 3 = OK|CANCEL|HELP)
 int modal_dialog(int buttons, int border_fg, int border_bg, int title_fg, int title_bg, const char *title, int text_fg, int text_bg, const char *fmt, ...) {
    va_list ap;

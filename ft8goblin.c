@@ -67,6 +67,25 @@ static void print_help(void) {
 static void print_status(void) {
    int offset = 0;
 
+   // time
+   char outstr[32];
+   time_t t;
+   struct tm *tmp;
+   memset(outstr, 0, 32);
+
+   if ((tmp = localtime(&now)) == NULL) {
+       perror("localtime");
+       exit(EXIT_FAILURE);
+   }
+
+   if (strftime(outstr, sizeof(outstr), "%H:%M:%S", tmp) == 0) {
+      log_send(mainlog, LOG_CRIT, "strftime returned 0");
+      exit(EXIT_FAILURE);
+   }
+
+   printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "[%s] ", outstr);
+   offset += 12;
+
    // callsign
    printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyCall:");
    offset += 8;
@@ -154,10 +173,11 @@ int main(int argc, char **argv) {
    if (!(cfg = load_config()))
       exit_fix_config();
 
+   // setup some values that are frequently requested
    mycall = cfg_get_str(cfg, "site/mycall");
    gridsquare = cfg_get_str(cfg, "site/gridsquare");
 
-   mainlog = log_open(dict_get(runtime_cfg, "logpath", "file://ft8goblin.log.txt"));
+   mainlog = log_open(dict_get(runtime_cfg, "logpath", "file://ft8goblin.log"));
 
    ui_init();
    // create the default TextArea for messages
@@ -165,6 +185,9 @@ int main(int argc, char **argv) {
    ui_resize_window();
    ui_io_watcher_init();
    ta_printf(msgbox, "$CYAN$Welcome to ft8goblin, a console ft8 client with support for multiple bands!");
+   log_send(mainlog, LOG_NOTICE, "ft8goblin starting up!");
+
+   // Draw the initial screen
    redraw_screen();
 
    // Initialize the GNIS place names database

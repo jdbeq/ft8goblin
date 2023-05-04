@@ -1,6 +1,8 @@
 //
 // Keyboard/mouse input handler
 //   
+// XXX: We need to make keymaps a loadable thing, so each menu, pane, etc can select its own keymap
+// XXX: This would make things a lot more pleasant for everyone!
 #include <termbox2.h>
 #include "config.h"
 #include "ui.h"
@@ -9,7 +11,9 @@
 #include <ev.h>
 
 static ev_io termbox_watcher, termbox_resize_watcher;
+static ev_timer periodic_watcher;
 extern TextArea *msgbox;
+time_t now = 0;
 
 void process_input(struct tb_event *evt) {
    if (evt == NULL) {
@@ -54,20 +58,22 @@ void process_input(struct tb_event *evt) {
          if (menu_level == 0) {
             toggle(&tx_enabled);
             redraw_screen();
-            ta_printf(msgbox, "$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
          } else {
             // always disable if in a submenu, only allow activating TX from home screen
             tx_enabled = 0;
-            ta_printf(msgbox, "$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
          }
+         ta_printf(msgbox, "$RED$TX %sabled globally!", (tx_enabled ? "en" : "dis"));
+         log_send(mainlog, LOG_NOTICE, "TX %sabled globally by user.", (tx_enabled ? "en" : "dis"));
       } else if (evt->key == TB_KEY_CTRL_X || evt->key == TB_KEY_CTRL_Q) {	// is it ^X or ^Q? If so exit
          ta_printf(msgbox, "$RED$Goodbye! Hope you had a nice visit!");
+         log_send(mainlog, LOG_NOTICE, "ft8goblin shutting down...");
          dying = 1;
          ui_shutdown();
          exit(0);
          return;
       } else {      					// Nope - display the event data for debugging
          ta_printf(msgbox, "$RED$unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
+         log_send(mainlog, LOG_DEBUG, "unknown event: type=%d key=%d ch=%c", evt->type, evt->key, evt->ch);
       }
    } else if (evt->type == TB_EVENT_RESIZE) {
       // change the stored dimensions/layout variables above
@@ -93,6 +99,11 @@ static void termbox_cb(EV_P_ ev_io *w, int revents) {
    process_input(&evt);
 }
 
+static void periodic_cb(EV_P_ ev_timer *w, int revents) {
+   now = time(NULL);
+   redraw_screen();
+}
+
 int ui_io_watcher_init(void) {
    struct ev_loop *loop = EV_DEFAULT;
    int rv = 0;
@@ -108,15 +119,20 @@ int ui_io_watcher_init(void) {
       // add to libev set
    } else {
       ta_printf(msgbox, "$RED$tb_get_fds returned nonsense (%d, %d) can't continue!", fd_tb_tty, fd_tb_resize);
+      log_send(mainlog, LOG_CRIT, "tb_get_fds returned nonsense (%d, %d) - I can't continue!", fd_tb_tty, fd_tb_resize);
       tb_present();
       exit(200);
    }
 
-   // XXX: error checking!
+   // start watchers on the termbox events
    ev_io_init(&termbox_watcher, termbox_cb, fd_tb_tty, EV_READ);
    ev_io_init(&termbox_resize_watcher, termbox_cb, fd_tb_resize, EV_READ);
    ev_io_start(loop, &termbox_watcher);
    ev_io_start(loop, &termbox_resize_watcher);
+
+   // start our once a second periodic timer (used for housekeeping and the clock display)
+   ev_timer_init(&periodic_watcher, periodic_cb, 0, 1);
+   ev_timer_start(loop, &periodic_watcher);
 
    return rv;
 }
