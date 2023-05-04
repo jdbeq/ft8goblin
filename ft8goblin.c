@@ -232,6 +232,8 @@ int view_config(void) {
 
 void halt_tx_now(void) {
    ta_printf(msgbox, "$RED$Halting TX!");
+   tx_enabled = false;
+   log_send(mainlog, LOG_CRIT, "Halting TX immediately at user request!");
    redraw_screen();
    tb_present();
 }

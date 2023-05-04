@@ -93,8 +93,6 @@ ft8encoder_objs += ft8encoder.o ${ft8coder_objs}
 # sigcapd #
 ###########
 sigcapd_objs += sigcapd.o
-
-# uhd (USRP) devices
 sigcapd_objs += uhd.o
 
 # ALSA audio support (if you're using ncurses, you might well not have pulse/pipewire either)

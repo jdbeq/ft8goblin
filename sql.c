@@ -22,8 +22,8 @@ Database *sql_open(const char *path) {
     }
 
     if ((db = malloc(sizeof(Database))) == NULL) {
-       fprintf(stderr, "sql_open: malloc failed, bailing!\n");
-       exit(200);
+       fprintf(stderr, "sql_open: out of memory!\n");
+       exit(ENOMEM);
     }
 
     // Is this sqlite3?

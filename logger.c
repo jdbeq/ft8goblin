@@ -98,7 +98,6 @@ int log_send(LogHndl *log, int level, const char *msg, ...) {
    return log_send_va(log, level, msg, ap);
 }
 
-
 LogHndl *log_open(const char *path) {
    LogHndl *log = (LogHndl *)malloc(sizeof(LogHndl));
    if (log == NULL) {
@@ -124,7 +123,7 @@ LogHndl *log_open(const char *path) {
       } else
          log->type = LOG_fifo;
    } else if (strncasecmp(path, "file://", 7) == 0) {
-      if (!(log->fp = fopen(path + 7, "w+"))) {
+      if (!(log->fp = fopen(path + 7, "a+"))) {
          fprintf(stderr, "failed opening log file '%s' %d:%s", path+7, errno, strerror(errno));
          log->fp = stderr;
       } else

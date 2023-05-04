@@ -45,7 +45,6 @@ void process_input(struct tb_event *evt) {
             menu_show(&menu_bands, 0);
          }
       } else if (evt->key == TB_KEY_CTRL_H) {			// ^H
-         tx_enabled = 0;
          halt_tx_now();
       } else if (evt->key == TB_KEY_CTRL_M) { 			// Is it ^M?
          if (menu_level == 0) {

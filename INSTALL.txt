@@ -13,3 +13,12 @@ BUILDING
 Try 'make world' to build.
 
 You'll need sudo access to install termbox2, if it's not already installed.
+
+EXTERNAL DATA
+-------------
+Either you'll need a QRZ.com subscription with XML access or every now and
+then to download the FCC database (which will only have US data).
+
+Right now the fcc-uls stuff is incomplete and unusable.
+
+Work is in progress to implement importing GNIS global place names database.
