@@ -12,6 +12,16 @@
           "type": "rtlsdr",
           "serial": "RTLV3001",
           "log-dropped-frames": "false"
+       },
+       {
+          "name": "ft891",
+          "type": "hamlib",
+          "hamlib-model": 2,
+          "hamlib-path": "127.0.0.1:4532",
+          "tx-priority": 0,
+          "enable-tx": "true",
+          "tx-audio-device": "hwplug:0",
+          "rx-audio-device": "hwplug:0"
        }
    ],
    "ipc": {
@@ -23,7 +33,6 @@
    "logging": {
       "decoder-loglevel": "notice",
       "decoder-logpath": "file://ft8decoder-%b.log",
-      "log-crashed-decoders": "true",
       "sigcapd-loglevel": "warning",
       "sigcapd-logpath": "file://sigcapd.log",
       "ft8goblin-loglevel": "error",
@@ -58,8 +67,13 @@
       "gnis-db": "gnis.db",
       "use-gnis": "false"
    },
-   "supervise-decoders": "true",
-   "supervise-sigcapd": "true",
+
+   "supervisor": {
+      "max-crashes": 5,
+      "max-crash-time": 60,
+      "supervise-decoders": "true",
+      "supervise-sigcapd": "true"
+   },
 
    "ft8decoder": {
       "waterfall-update-main": 0.1,

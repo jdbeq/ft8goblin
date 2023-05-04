@@ -36,11 +36,12 @@ yajl_val parse_config(const char *cfgfile) {
     }
 
     // this is gross ;)
-    cfg_len = sb.st_size;
+    cfg_len = sb.st_size + 1;
     if ((data = malloc(cfg_len)) == NULL) {
        fprintf(stderr, "parse_config: error allocating memory for config parser, exiting!\n");
        exit(255);
     }
+    memset(data, 0, cfg_len);
 
     if ((fp = fopen(cfgfile, "r")) == NULL) {
        fprintf(stderr, "parse_config: fopen(%s, \"r\") failed: %d: %s\n", cfgfile, errno, strerror(errno));
@@ -59,8 +60,8 @@ yajl_val parse_config(const char *cfgfile) {
        free(data);
        fclose(fp);
        return NULL;
-    } else if (rd < cfg_len) {
-       fprintf(stderr, "parse_config: config file too big\n");
+    } else if (rd < (cfg_len - 1)) {
+       fprintf(stderr, "parse_config: config file too big to read in one fread, this isn't yet supported ;(\n");
        free(data);
        fclose(fp);
        return NULL;
@@ -71,7 +72,7 @@ yajl_val parse_config(const char *cfgfile) {
     fp = NULL;
 
     /* we have the whole config file in memory.  let's parse it ... */
-    node = yajl_tree_parse((const char *) data, errbuf, sizeof(errbuf));
+    node = yajl_tree_parse((const char *) data, errbuf, sizeof(errbuf) -1);
 
     /* parse error handling */
     if (node == NULL) {

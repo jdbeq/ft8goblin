@@ -16,7 +16,7 @@ lib_install_path := ${PREFIX}/lib
 # required libraries: -l${x} will be expanded later...
 common_libs += yajl ev
 ft8goblin_libs += ncurses termbox2
-ft8decoder_libs += ft8
+ft8coder_libs += ft8 m
 sigcapd_libs += uhd rtlsdr uhd rtlsdr
 
 ifeq (${PULSEAUDIO},y)
@@ -26,8 +26,8 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-CFLAGS += -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -pedantic #-Werror
-LDFLAGS += $(foreach x,${common_libs},-l${x})
+CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ft8_lib -Wall -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -pedantic #-Werror
+LDFLAGS += $(foreach x,${common_libs},-l${x}) -fsanitize=address
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
 ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})
 sigcapd_ldflags := ${LDFLAGS} $(foreach x,${sigcapd_libs},-l${x})

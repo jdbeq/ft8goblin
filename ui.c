@@ -126,6 +126,7 @@ int ta_append(TextArea *ta, const char *buf) {
       return -1;
    }
 
+   // duplicate the buffer
    char *bp = strdup(buf);
 
    // set needs_freed to ensure it gets freed automatically...
@@ -146,9 +147,7 @@ void ta_printf(TextArea *ta, const char *fmt, ...) {
 
     vsnprintf(buf, sizeof(buf), fmt, vl);
     va_end(vl);
-    // we need to duplicate this and ensure it gets free()'d when bumped out of the ringbuffer...
-//    ta_append(ta, buf);
-//    print_tb(buf, my_x, my_y, fg, bg);
+    ta_append(ta, buf);
 }
 
 void ui_resize_window(void) {
@@ -184,7 +183,7 @@ void ui_shutdown(void) {
    // libev_shutdown();
 
    // send SIGTERM then SIGKILL to subprocesses...
-   subproc_shutdown();
+   subproc_shutdown_all();
 
    // shut down termbox
    tb_shutdown();
