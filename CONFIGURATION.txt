@@ -1,14 +1,6 @@
 To configure things, edit config.json
 
+Then start bin/ft8goblin
 
-Here you'll setup your bands and their respective ports to match
-what you have in the GNU Radio Compation (GRC) flowgraph.
 
-These *MUST* match or things will be stupid
-
-You probably want to make sure supervise-ft8decoder and supervise-ft8capture
-are set to true, otherwise, you'll need to manually make sure they're
-running.
-
-ft8decoder takes one argument, the name of the band it should match from
-config.json - this will configure it's UDP port, etc.
+You could also install it globally, in theory...

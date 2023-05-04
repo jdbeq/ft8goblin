@@ -1,6 +1,7 @@
 These are not in any particular order, but stuff near the bottom is probably far off...
 ------
 * Make sure that things in common_objs aren't calling termbox or tuilib bits
+* Work on making things smart enough to deal with being installed on the host
 * Finish TextArea implementation
 * Finish InputBox implementation
 * Complete ft8decoder using ft8lib for ft4 and ft8

@@ -25,10 +25,10 @@ termbox2/*.so.*
 termbox2/*.a
 
 # Exclude binaries
-ft8goblin
-decoderd-ft8
-encoderd-ft8
-sigcapd
+bin/ft8goblin
+bin/decoderd-*
+bin/encoderd-*
+bin/sigcapd
 
 # These might contain sensitive user data...
 etc/watchlist.txt
@@ -36,8 +36,12 @@ etc/config.json
 etc/*.db
 
 # log files
-*.log
-*.log.txt
+logs/*.log
+logs/*.debug
+
+# runtime created files that dont need to persist
+run/*.pid
+run/*.pipe
 
 # Database sources are large and can be dealt with by the builder...
 fcc_uls/download/*

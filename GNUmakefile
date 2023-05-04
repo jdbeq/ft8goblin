@@ -15,9 +15,9 @@ lib_install_path := ${PREFIX}/lib
 
 # required libraries: -l${x} will be expanded later...
 common_libs += yajl ev
-ft8goblin_libs += ncurses termbox2
+ft8goblin_libs += ncurses termbox2 hamlib
 ft8coder_libs += ft8 m
-sigcapd_libs += uhd rtlsdr uhd rtlsdr
+sigcapd_libs += uhd rtlsdr uhd rtlsdr hamlib
 
 ifeq (${PULSEAUDIO},y)
 libs += pulse
@@ -129,32 +129,34 @@ ft8decoder_real_objs := $(foreach x,${ft8decoder_objs} ${common_objs},obj/${x})
 ft8encoder_real_objs := $(foreach x,${ft8encoder_objs} ${common_objs},obj/${x})
 sigcapd_real_objs := $(foreach x,${sigcapd_objs} ${common_objs},obj/${x})
 
-# Build all subdirectories first, then our binary
-world: subdirs-world subdirs-install-sudo ${bins}
+# and bin/ to bin names
+real_bins := $(foreach x,${bins},bin/${x})
 
-# This will trigger subdirs-install if termbox2.so  is missing
+# Build all subdirectories first, then our binary
+world: subdirs-world subdirs-install-sudo ${real_bins}
+
+# This will trigger subdirs-install if termbox2.so is missing in the global libdir
 subdirs-install-sudo:
 	if [ ! -f ${lib_install_path}/libtermbox2.so.2.0.0 ]; then \
 	   sudo ${MAKE} subdirs-install; \
 	fi
 
 install:
-	@for i in ${bins}; do \
+	@for i in ${real_bins}; do \
 		install -m 0755 $$i ${bin_install_path}/$$i; \
 	done
 
 .PHONY: clean subdirs-world distclean
 
 distclean: 
-	${RM} *.log
 	${MAKE} clean subdirs-clean
 
 clean:
 	@echo "Cleaning..."
-
 # Try to enforce cleaning before other rules
 ifneq ($(filter clean,$(MAKECMDGOALS)),)
-	$(shell ${RM} -f ${bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs}  ${sigcapd_real_objs} ${extra_clean})
+	$(shell ${RM} -f logs/*.log logs/*.debug run/*.pid run/*.pipe
+	$(shell ${RM} -f ${real_bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs}  ${sigcapd_real_objs} ${extra_clean})
 endif
 
 subdirs-clean:
@@ -169,35 +171,35 @@ subdirs-world:
 	@echo "Building subdirectories..."
 	@for i in ${subdirs}; do ${MAKE} -C $$i ; done
 
-# build the user frontend
-ft8goblin: ${ft8goblin_real_objs}
-	@echo "[LD] $^ -> $@"
-	@${CC} -o $@ $^ ${ft8goblin_ldflags} 
-
-# and the backends...
-decoderd-ft8: ${ft8decoder_real_objs}
-	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags}
-
-encoderd-ft8: ${ft8encoder_real_objs}
-	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags}
-
-# sigcapd needs more libraries than the others
-sigcapd: ${sigcapd_real_objs}
-	@echo "[LD] $^ -> $@"
-	@${CC} -o $@ $^ ${sigcapd_ldflags}
-
-obj/sigcapd.o: src/sigcapd.c
-	@echo "[LD] $^ -> $@"
-	@${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
+#################
+# Build Targets #
+#################
+qrztest: qrztest2.c
+	gcc -o $@ $< -lxml2 -lcurl -I/usr/include/libxml2
 
 obj/%.o: src/%.c $(wildcard *.h)
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} -o $@ -c $<
 
-qrztest: qrztest2.c
-	gcc -o $@ $< -lxml2 -lcurl -I/usr/include/libxml2
+bin/ft8goblin: ${ft8goblin_real_objs}
+	@echo "[LD] $^ -> $@"
+	${CC} -o $@ $^ ${ft8goblin_ldflags} 
+
+bin/decoderd-ft8: ${ft8decoder_real_objs}
+	@echo "[LD] $^ -> $@"
+	${CC} -o $@ $^ ${ft8coder_ldflags}
+
+bin/encoderd-ft8: ${ft8encoder_real_objs}
+	@echo "[LD] $^ -> $@"
+	${CC} -o $@ $^ ${ft8coder_ldflags}
+
+bin/sigcapd: ${sigcapd_real_objs}
+	@echo "[LD] $^ -> $@"
+	${CC} -o $@ $^ ${sigcapd_ldflags}
+
+obj/sigcapd.o: src/sigcapd.c
+	@echo "[LD] $^ -> $@"
+	@${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
 
 ####################################################################
 # ugly hacks to quiet the compiler until we can clean things up... #
