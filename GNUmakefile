@@ -1,4 +1,5 @@
 # Adventurous, huh?
+VERSION = 20230505.01
 all: world
 bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd
 

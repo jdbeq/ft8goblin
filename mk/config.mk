@@ -21,6 +21,7 @@ C_STD := -std=gnu11
 CXX_STD := -std=gnu++17
 CFLAGS += ${C_STD} -I./ext/ -I./include/ -I./ext/ft8_lib/
 CFLAGS += ${SAN_FLAGS} ${WARN_FLAGS} ${ERROR_FLAGS} ${OPT_FLAGS}
+CFLAGS += -DVERSION="\"${VERSION}\""
 CXXFLAGS := ${CXX_STD} $(filter-out ${C_STD},${CFLAGS})
 LDFLAGS += -L./lib/ $(foreach x,${common_libs},-l${x}) -fsanitize=address
 ft8lib_cflags := -fPIC

@@ -4,6 +4,7 @@
 #include "config.h"
 #include "dict.h"
 #include "util.h"
+#include "debuglog.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -232,7 +233,7 @@ int cfg_get_int(yajl_val cfg, const char *path) {
       rv = YAJL_GET_INTEGER(v);
 //      fprintf(stderr, "%s: <%s> = %d\n", __FUNCTION__, path, rv);
    } else {
-      fprintf(stderr, "cfg_get_int: no such node: %s\n", path);
+      log_send(mainlog, LOG_WARNING, "cfg_get_int: no such node %s. check your configuration file!", path);
    }
 
    return rv;
@@ -252,7 +253,7 @@ const char *cfg_get_str(yajl_val cfg, const char *path) {
       rv = YAJL_GET_STRING(v);
 //      fprintf(stderr, "cfg_get_str: <%s> = %s\n", path, rv);
    } else {
-      fprintf(stderr, "cfg_get_str: no such node: %s\n", path);
+      log_send(mainlog, LOG_WARNING, "cfg_get_str: no such node %s. check your configuration file!", path);
    }
 
    return rv;

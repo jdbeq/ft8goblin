@@ -5,6 +5,7 @@
 #include "debuglog.h"
 #include "watch.h"
 #include "daemon.h"
+#include "qrz-xml.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -197,6 +198,7 @@ int main(int argc, char **argv) {
    // Initialize the GNIS place names database
 
    // Initialize the Callsign lookup system
+   qrz_start_session();
 
    // Load the watchlists
    watchlist_load(cfg_get_str(cfg, "ui/alerts/watchfile"));
