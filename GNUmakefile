@@ -181,19 +181,19 @@ obj/%.o: src/%.c $(wildcard *.h)
 
 bin/ft8goblin: ${ft8goblin_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8goblin_ldflags} 
+	@${CC} -o $@ $^ ${ft8goblin_ldflags} 
 
 bin/decoderd-ft8: ${ft8decoder_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags}
+	@${CC} -o $@ $^ ${ft8coder_ldflags}
 
 bin/encoderd-ft8: ${ft8encoder_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags}
+	@${CC} -o $@ $^ ${ft8coder_ldflags}
 
 bin/sigcapd: ${sigcapd_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${sigcapd_ldflags}
+	@${CC} -o $@ $^ ${sigcapd_ldflags}
 
 obj/sigcapd.o: src/sigcapd.c
 	@echo "[LD] $^ -> $@"
