@@ -39,4 +39,8 @@ obj/ft8lib/ft8/%.o: ext/ft8_lib/ft8/%.c
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} ${ft8lib_cflags} -o $@ -c $<
 
+ft8lib-clean:
+	@${RM} -f ${ft8lib_objs} ${ft8lib}
+
 extra_build_targets += ${ft8lib}
+extra_clean_targets += ft8lib-clean

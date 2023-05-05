@@ -16,7 +16,7 @@ lib/libyajl.so: lib/libyajl.so.2
 	@ln -s $(shell basename $<) $@
 
 ext/yajl/build/yajl-${yajl_lib_ver}/lib/libyajl.so.${yajl_lib_ver}: ext/yajl/Makefile
-	${MAKE} -C ext/yajl
+	@${MAKE} -C ext/yajl
 
 ext/yajl/Makefile:
 	@cd ext/yajl; ./configure --prefix=.
@@ -27,5 +27,6 @@ extra_build_targets += ${yajl}
 
 yajl-clean:
 ifneq ($(wildcard ext/yajl/Makefile})x,x)
-	${MAKE} -C ext/yajl distclean
+	@${MAKE} -C ext/yajl distclean
 endif
+	@${RM} -f lib/libyajl.*

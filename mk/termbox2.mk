@@ -18,10 +18,11 @@ lib/libtermbox2.so: lib/libtermbox2.so.2
 	@ln -s $(shell basename $<) $@
 
 ext/termbox2/libtermbox2.so.${termbox_lib_ver}:
-	${MAKE} -C ext/termbox2 all
+	@${MAKE} -C ext/termbox2 all
 
 termbox2-clean:
 	${MAKE} -C ext/termbox2 clean
+	${RM} -f lib/libtermbox2.* ${termbox2}
 
 extra_clean_targets += termbox2-clean
 extra_build_targets += ${termbox2}
