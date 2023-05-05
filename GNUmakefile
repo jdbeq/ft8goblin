@@ -5,6 +5,7 @@ all: world
 PREFIX ?= /usr
 PULSEAUDIO=y
 ALSA=y
+termbox_lib_ver := 2.0.0
 
 bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd
 
@@ -130,8 +131,20 @@ sigcapd_objs += udp_src.o
 
 termbox2 := lib/libtermbox2.so
 
-lib/libtermbox2.so: ext/termbox2/libtermbox2.so
-ext/termbox2/libtermbox2.so:
+lib/libtermbox2.so.${termbox_lib_ver}: ext/termbox2/libtermbox2.so.${termbox_lib_ver}
+	@echo "[CP] $@  lib/"
+	@install -m 0755 $^ lib/
+
+lib/libtermbox2.so.2: lib/libtermbox2.so.${termbox_lib_ver}
+	@echo "[LN] $< -> $@"
+	@rm -f $@
+	@ln -s $(shell basename $<) $@
+
+lib/libtermbox2.so: lib/libtermbox2.so.2
+	@rm -f $@
+	@ln -s $(shell basename $<) $@
+
+ext/termbox2/libtermbox2.so.${termbox_lib_ver}:
 	${MAKE} -C ext/termbox2 all
 
 termbox2-clean:

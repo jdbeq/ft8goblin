@@ -7,3 +7,6 @@
 [submodule "fcc_uls/ulsweb"]
 	path = data-sources/fcc_uls/ulsweb
 	url = https://github.com/PripyatAutomations/ulsweb
+[submodule "ext/yajl"]
+	path = ext/yajl
+	url = https://github.com/lloyd/yajl.git
