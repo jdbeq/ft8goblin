@@ -38,3 +38,5 @@ obj/ft8lib/fft/%.o: ext/ft8_lib/fft/%.c
 obj/ft8lib/ft8/%.o: ext/ft8_lib/ft8/%.c
 	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} ${ft8lib_cflags} -o $@ -c $<
+
+extra_build_targets += ${ft8lib}

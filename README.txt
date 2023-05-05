@@ -15,7 +15,12 @@ Ex:
 	joe config.json
 
 Start the mess:
-	ft8goblin
+	./startup
 
 In theory, the client will keep the ft8 decoders/etc running, check the logs
 (ft8decoder.$band.log)
+
+
+If you install (make install), you can avoid the ./startup script and call ft8goblin directly.
+
+For now installing isn't fully supported, please report any bugs you find with it!

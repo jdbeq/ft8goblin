@@ -1,0 +1,8 @@
+#!/bin/bash
+# A simple wrapper to fixup path issues and start ft8goblin without installing...
+
+# Add ./lib to the library search path
+export LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH}
+
+# Start ft8goblin
+./bin/ft8goblin
