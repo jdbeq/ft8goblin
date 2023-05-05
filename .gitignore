@@ -1,28 +1,21 @@
 # submodules
-ft8_lib/*
-termbox2/*
+ext/*
+ext/*/*
+ext/*/*/*
+ext/*/*/*/*
+ext/*/*/*/*/*
 
 # Exclude build artifacts
-*.o
-*.map
-*.so
-*.so.*
-*.a
-*/*.o
-*/*.so
-*/*.so.*
-*/*.a
-ft8_lib/*.a
-ft8_lib/*.o
-ft8_lib/*.so
-ft8_lib/*.so.*
-ft8_lib/*/*.a
-ft8_lib/*/*.o
-ft8_lib/*/*.so
-ft8_lib/*/*.so.*
-termbox2/*.so
-termbox2/*.so.*
-termbox2/*.a
+obj/*.map
+obj/*.o
+obj/*.so
+obj/*.so.*
+obj/*.a
+obj/*/*.map
+obj/*/*.o
+obj/*/*.so
+obj/*/*.so.*
+obj/*/*.a
 
 # Exclude binaries
 bin/ft8goblin
@@ -35,6 +28,13 @@ etc/watchlist.txt
 etc/config.json
 etc/*.db
 
+# built libraries
+lib/*.a
+lib/*.so
+lib/*.so.*
+lib/*.plugin
+lib/*.o
+
 # log files
 logs/*.log
 logs/*.debug
@@ -44,14 +44,14 @@ run/*.pid
 run/*.pipe
 
 # Database sources are large and can be dealt with by the builder...
-fcc_uls/download/*
-gnis/Text/*
-gnis/disclaimer.txt
-gnis/*.jpg
-gnis/*.txt
-gnis/*.zip
-gnis/*.xml
-gnis/*.7z
+data-sources/fcc_uls/download/*
+data-sources/gnis/Text/*
+data-sources/gnis/disclaimer.txt
+data-sources/gnis/*.jpg
+data-sources/gnis/*.txt
+data-sources/gnis/*.zip
+data-sources/gnis/*.xml
+data-sources/gnis/*.7z
 
 ##############
 # misc stuff #

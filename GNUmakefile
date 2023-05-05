@@ -12,10 +12,12 @@ bin_install_path := ${PREFIX}/bin
 etc_install_path ?= /etc/ft8goblin
 lib_install_path := ${PREFIX}/lib
 
+include ft8lib.mk
+
 # required libraries: -l${x} will be expanded later...
 common_libs += yajl ev
-ft8goblin_libs += ncurses termbox2 hamlib
-ft8coder_libs += ft8 m
+ft8goblin_libs += ncurses termbox2 hamlib m
+ft8coder_libs += m
 sigcapd_libs += uhd rtlsdr uhd rtlsdr hamlib
 
 ifeq (${PULSEAUDIO},y)
@@ -26,13 +28,17 @@ libs += asound
 endif
 
 #ERROR_FLAGS := -Werror 
-WARN_FLAGS := -pedantic -Wno-unused-variable -Wno-unused-function #-Wno-missing-braces
-CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ext -I./include -Wall ${WARN_FLAGS} ${ERROR_FLAGS}
+SAN_FLAGS := -fsanitize=address
+WARN_FLAGS := -Wall -pedantic -Wno-unused-variable -Wno-unused-function #-Wno-missing-braces
+OPT_FLAGS := -O2 -ggdb3
+CFLAGS += -std=gnu11 -I./ext/ -I./include/ -I./ext/ft8_lib/
+CFLAGS += ${SAN_FLAGS} ${WARN_FLAGS} ${ERROR_FLAGS} ${OPT_FLAGS}
 LDFLAGS += $(foreach x,${common_libs},-l${x}) -fsanitize=address
+ft8lib_cflags := -fPIC
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
 ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})
+ft8coder_ldflags += -L./lib -lft8
 sigcapd_ldflags := ${LDFLAGS} $(foreach x,${sigcapd_libs},-l${x})
-subdirs += ext/ft8_lib ext/termbox2
 
 ##################
 # Common Objects #
@@ -122,52 +128,43 @@ sigcapd_objs += udp_src.o
 ##############################################################
 ##############################################################
 
+termbox2 := lib/libtermbox2.so
+
+lib/libtermbox2.so: ext/termbox2/libtermbox2.so
+ext/termbox2/libtermbox2.so:
+	${MAKE} -C ext/termbox2 all
+
+termbox2-clean:
+	${MAKE} -C ext/termbox2 clean
+
+extra_clean_targets += termbox2-clean
 # prepend obj/ to the obj names
 ft8goblin_real_objs := $(foreach x,${ft8goblin_objs} ${common_objs},obj/${x})
 ft8decoder_real_objs := $(foreach x,${ft8decoder_objs} ${common_objs},obj/${x})
 ft8encoder_real_objs := $(foreach x,${ft8encoder_objs} ${common_objs},obj/${x})
 sigcapd_real_objs := $(foreach x,${sigcapd_objs} ${common_objs},obj/${x})
-
-# and bin/ to bin names
 real_bins := $(foreach x,${bins},bin/${x})
+extra_clean += ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs} ${sigcapd_real_objs}
+extra_clean += ${real_bins} ${ft8lib} ${ft8lib_objs}
 
 # Build all subdirectories first, then our binary
-world: subdirs-world ${real_bins}
-
+world: ${ft8lib} ${termbox2} ${real_bins}
 
 install:
 	@for i in ${real_bins}; do \
 		install -m 0755 $$i ${bin_install_path}/$$i; \
 	done
 
-.PHONY: clean subdirs-world distclean
-
-distclean: 
-	${MAKE} clean subdirs-clean
+distclean: clean
 
 clean:
 	@echo "Cleaning..."
 # Try to enforce cleaning before other rules
 ifneq ($(filter clean,$(MAKECMDGOALS)),)
-	$(shell ${RM} -f logs/*.log logs/*.debug run/*.pid run/*.pipe)
-	$(shell ${RM} -f ${real_bins} ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs}  ${sigcapd_real_objs} ${extra_clean})
+	${RM} -f logs/*.log logs/*.debug run/*.pid run/*.pipe
+	${RM} -f ${extra_clean}
+	${MAKE} ${extra_clean_targets}
 endif
-
-subdirs-clean:
-	@echo "Cleaning subdirectories..."
-	@for i in ${subdirs}; do ${MAKE} -C $$i clean ; done
-
-install-deps:
-	@echo "Install subdirectories..."
-	@for i in ${subdirs}; do ${MAKE} -C $$i install ; done
-
-# Allow using sudo, if needed
-install-deps-sudo:
-	sudo ${MAKE} subdirs-install
-
-subdirs-world:
-	@echo "Building subdirectories..."
-	@for i in ${subdirs}; do ${MAKE} -C $$i ; done
 
 #################
 # Build Targets #
