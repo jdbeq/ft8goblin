@@ -14,6 +14,7 @@
 #include "subproc.h"
 #include "debuglog.h"
 #include <errno.h>
+#include <regex.h>
 #include <termbox2.h>
 
 extern TextArea *msgbox;
@@ -44,7 +45,7 @@ void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...) {
 // Parse out color tags //
 //////////////////////////
 // XXX: Really we need shorter tokens for these like
-static int parse_color(const char *str) {
+int parse_color(const char *str) {
    int rv = -1;
 
    if (strncmp(str, "BLACK", 5) == 0) {
@@ -85,13 +86,12 @@ static int parse_color(const char *str) {
    return rv;
 }
 
-typedef struct ColorPair {
-   int fg, bg;
-} ColorPair;
-
 // Use parse_color above to parse out color strings, whether just $FG$ or $FG,BG$
-static ColorPair parse_color_str(const char *str) {
-   ColorPair cp;
+ColorPair parse_color_str(const char *str) {
+   ColorPair cp = { 0, 0};
+   
+
+   // XXX: Find $...$ pattern
 
    return cp;
 }

@@ -10,9 +10,7 @@
 #include <limits.h>
 
 int pidfd = -1;
-
 const char *pidfile = NULL;
-
 extern char *progname;
 
 // Detach from the console and go into background
@@ -87,7 +85,7 @@ int daemonize(void) {
 }
 
 void fini(int status) {
-//   log_send(mainlog, LOG_CRIT, "shutting down: %d", status);
+   fprintf(stderr, "shutting down: %d", status);
 //   dump_statistics(cfg->Get("path.statsfile", NULL));
    close(pidfd);
    pidfd = -1;
@@ -97,17 +95,17 @@ void fini(int status) {
 
 // Catch signals
 static void sighandler(int signum) {
-//   log_send(mainlog, LOG_CRIT, "caught signal %d...", signum);
+   fprintf(stderr, "caught signal %d...", signum);
    switch(signum) {
       // Convenience signals
       case SIGHUP:
-//         log_send(mainlog, LOG_INFO, "Reloading!");
+         fprintf(stderr, "Reloading!");
          break;
       case SIGUSR1:
-//         log_send(mainlog, LOG_INFO, "Dumping database to disk");
+         fprintf(stderr, "Dumping database to disk");
          break;
       case SIGUSR2:
-//         log_send(mainlog, LOG_INFO, "Dumping statistics to disk");
+         fprintf(stderr, "Dumping statistics to disk");
 //         dump_statistics(cfg->Get("path.statsfile", NULL));
          break;
       // Fatal signals
@@ -116,7 +114,7 @@ static void sighandler(int signum) {
       case SIGKILL:
          fini(signum);
       default:
-//         log_send(mainlog, LOG_CRIT, "Caught unknown signal %d", signum);
+         fprintf(stderr, "Caught unknown signal %d", signum);
          break;
    }
 }

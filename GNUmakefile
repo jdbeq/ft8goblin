@@ -1,13 +1,9 @@
 # Adventurous, huh?
 all: world
-
 bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd
 
 include mk/config.mk
 
-##################
-# Common Objects #
-##################
 common_objs += config.o
 common_objs += daemon.o
 common_objs += debuglog.o
@@ -16,15 +12,8 @@ common_objs += ipc.o
 common_objs += memory.o
 common_objs += ringbuffer.o
 common_objs += util.o
-
-################
-# TUI: text UI #
-################
 tui_objs += tui.o tui-input.o tui-menu.o tui-textarea.o
 
-###########
-# FT8 TUI #
-###########
 ft8goblin_objs += sql.o		# sqlite3 / postgis wrapper
 ft8goblin_objs += ${tui_objs} 	# text user interface
 ft8goblin_objs += fcc-db.o	# FCC ULS database
@@ -35,30 +24,19 @@ ft8goblin_objs += maidenhead.o	# maidenhead coordinates tools
 ft8goblin_objs += subproc.o	# subprocess management
 ft8goblin_objs += watch.o	# watch lists
 ft8goblin_objs += qrz-xml.o	# QRZ XML API callsign lookups (paid)
-
-###################
-# FT8 De/En-coder #
-###################
 ft8coder_objs += ft8lib.o	# interface to the FT8 library
-ft8decoder_objs += ft8decoder.o ${ft8coder_objs}
-ft8encoder_objs += ft8encoder.o ${ft8coder_objs}
-
-###########
-# sigcapd #
-###########
+ft8decoder_objs += decoderd-ft8.o ${ft8coder_objs}
+ft8encoder_objs += encoderd-ft8.o ${ft8coder_objs}
 sigcapd_objs += sigcapd.o
 sigcapd_objs += uhd.o
 sigcapd_objs += hamlib.o
 sigcapd_objs += alsa.o		# ALSA Linux Audio
 
-# if pulseaudio is enabled, make sure we build to support it
 ifeq (${PULSEAUDIO}, y)
 sigcapd_objs += pulse.o		# pulseaudio
 sigcapd_cflags += -DPULSEAUDIO
-.PHONY: obj/sigcapd.o sigcapd
-obj/pulse.o: src/pulse.c
-	@echo "[CC] $< -> $@"
-	@${CC} ${CFLAGS} ${sigcapd_flags} -o $@ -c $<
+# make these force rebuild of obj/pulse.o
+obj/sigcapd.o: include/config.h mk/config.mk
 else
 extra_clean += obj/pulse.o
 endif

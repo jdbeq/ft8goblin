@@ -132,7 +132,6 @@ static void print_status(void) {
    printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
    offset += 2;
 
-   
    // print the PTT status
    printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[");
    offset++;

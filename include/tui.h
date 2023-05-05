@@ -14,6 +14,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+   typedef struct ColorPair {
+      int fg, bg;
+   } ColorPair;
+   extern ColorPair parse_color_str(const char *str);
+   extern int parse_color(const char *str);
+
    // Print *anywhere* on the screen (dont try to print on the TextAreas ;)
    extern void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg);
    extern void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...);
