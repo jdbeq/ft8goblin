@@ -4,9 +4,6 @@
 [submodule "termbox2"]
 	path = ext/termbox2
 	url = https://github.com/termbox/termbox2.git
-[submodule "fcc_uls/ulsweb"]
-	path = ext/ulsweb
-	url = https://github.com/PripyatAutomations/ulsweb
 [submodule "ext/yajl"]
 	path = ext/yajl
 	url = https://github.com/lloyd/yajl.git

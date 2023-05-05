@@ -60,19 +60,19 @@ qrztest: qrztest2.c
 
 bin/ft8goblin: ${ft8goblin_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8goblin_ldflags} 
+	${CC} -o $@ $^ ${ft8goblin_ldflags} ${LDFLAGS}
 
 bin/decoderd-ft8: ${ft8decoder_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags}
+	${CC} -o $@ $^ ${ft8coder_ldflags} ${LDFLAGS}
 
 bin/encoderd-ft8: ${ft8encoder_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags}
+	${CC} -o $@ $^ ${ft8coder_ldflags} ${LDFLAGS}
 
 bin/sigcapd: ${sigcapd_real_objs}
 	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${sigcapd_ldflags}
+	${CC} -o $@ $^ ${sigcapd_ldflags} ${LDFLAGS}
 
 obj/sigcapd.o: src/sigcapd.c
 	@echo "[LD] $^ -> $@"

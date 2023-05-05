@@ -41,20 +41,20 @@ static void print_help(void) {
 
    printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "TAB ");
    offset += 4;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Switch Panes ");
-   offset += 13;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Switch Pane ");
+   offset += 12;
    printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^Q/^X ");
    offset += 6;
    printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Exit ");
    offset += 5;
    printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^B ");
    offset += 3;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Band Menu ");
-   offset += 10;
-   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^M ");
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Bands ");
+   offset += 6;
+   printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^S ");
    offset += 3;
-   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Menu ");
-   offset += 5;
+   printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Settings ");
+   offset += 8;
    printf_tb(offset, 0, TB_RED|TB_BOLD, 0, "^T ");
    offset += 3;
    printf_tb(offset, 0, TB_MAGENTA|TB_BOLD, 0, "Toggle TX ");

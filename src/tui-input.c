@@ -46,7 +46,7 @@ void process_input(struct tb_event *evt) {
          }
       } else if (evt->key == TB_KEY_CTRL_H) {			// ^H
          halt_tx_now();
-      } else if (evt->key == TB_KEY_CTRL_M) { 			// Is it ^M?
+      } else if (evt->key == TB_KEY_CTRL_S) { 			// Is it ^S?
          if (menu_level == 0) {
             menu_history_clear();
             menu_show(&menu_main, 0);
