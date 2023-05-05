@@ -1,8 +1,8 @@
 [submodule "ft8_lib"]
-	path = ft8_lib
+	path = ext/ft8_lib
 	url = https://github.com/PripyatAutomations/ft8_lib
 [submodule "termbox2"]
-	path = termbox2
+	path = ext/termbox2
 	url = https://github.com/termbox/termbox2.git
 [submodule "fcc_uls/ulsweb"]
 	path = fcc_uls/ulsweb

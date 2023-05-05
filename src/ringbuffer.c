@@ -33,6 +33,7 @@ void rb_destroy(rb_buffer_t *buffer) {
     rb_node_t *current = buffer->head;
     while (current != NULL) {
         rb_node_t *next = current->next;
+        log_send(mainlog, LOG_DEBUG, "rb: Destroying entry rb:%p to %p, needs_freed: %d", current, current->data, current->needs_freed);
 
         if (current->needs_freed && current->data != NULL)
            free(current->data);

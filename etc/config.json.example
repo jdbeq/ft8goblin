@@ -177,6 +177,7 @@
          "name": "ft8-6,",
          "mode": "ft8",
          "frequency": 28074000,
+         "lnb-offset": -128000000,
          "port": 12011,
          "width": 3500
       }

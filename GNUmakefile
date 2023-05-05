@@ -1,10 +1,9 @@
 # Adventurous, huh? So there's some weird things happening here to make sure parellel builds work..
 # Try it! 'make -j40 clean world' or similar should successfully build
-
 all: world
 
 PREFIX ?= /usr
-PULSEAUDIO=n
+PULSEAUDIO=y
 ALSA=y
 
 bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd
@@ -26,14 +25,14 @@ ifeq (${ALSA},y)
 libs += asound
 endif
 
-ERROR_FLAGS := -Werror -Wno-error=int-conversion -Wno-missing-braces
+#ERROR_FLAGS := -Werror 
 WARN_FLAGS := -pedantic -Wno-unused-variable -Wno-unused-function #-Wno-missing-braces
-CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ -I./include -Wall ${WARN_FLAGS} ${ERROR_FLAGS}
+CFLAGS += -fsanitize=address -O2 -ggdb3 -std=gnu11 -I./ext -I./include -Wall ${WARN_FLAGS} ${ERROR_FLAGS}
 LDFLAGS += $(foreach x,${common_libs},-l${x}) -fsanitize=address
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})
 ft8coder_ldflags := ${LDFLAGS} $(foreach x,${ft8coder_libs},-l${x})
 sigcapd_ldflags := ${LDFLAGS} $(foreach x,${sigcapd_libs},-l${x})
-subdirs += ft8_lib termbox2
+subdirs += ext/ft8_lib ext/termbox2
 
 ##################
 # Common Objects #
@@ -106,9 +105,9 @@ ifeq (${PULSEAUDIO}, y)
 # XXX: This is a stub for now, feel free to write it :P
 sigcapd_objs += pulse.o
 sigcapd_cflags += -DPULSEAUDIO
-.PHONY: obj/pulse.o pulse.c obj/sigcapd.o
-obj/pulse.o: pulse.c
-	@echo 
+#.PHONY: obj/pulse.o obj/sigcapd.o
+obj/pulse.o: src/pulse.c
+	@echo "[CC] $< -> $@"
 	@${CC} ${CFLAGS} ${sigcapd_flags} -o $@ -c $<
 else
 extra_clean += obj/pulse.o
@@ -133,13 +132,8 @@ sigcapd_real_objs := $(foreach x,${sigcapd_objs} ${common_objs},obj/${x})
 real_bins := $(foreach x,${bins},bin/${x})
 
 # Build all subdirectories first, then our binary
-world: subdirs-world subdirs-install-sudo ${real_bins}
+world: subdirs-world ${real_bins}
 
-# This will trigger subdirs-install if termbox2.so is missing in the global libdir
-subdirs-install-sudo:
-	if [ ! -f ${lib_install_path}/libtermbox2.so.2.0.0 ]; then \
-	   sudo ${MAKE} subdirs-install; \
-	fi
 
 install:
 	@for i in ${real_bins}; do \
@@ -163,9 +157,13 @@ subdirs-clean:
 	@echo "Cleaning subdirectories..."
 	@for i in ${subdirs}; do ${MAKE} -C $$i clean ; done
 
-subdirs-install:
+install-deps:
 	@echo "Install subdirectories..."
 	@for i in ${subdirs}; do ${MAKE} -C $$i install ; done
+
+# Allow using sudo, if needed
+install-deps-sudo:
+	sudo ${MAKE} subdirs-install
 
 subdirs-world:
 	@echo "Building subdirectories..."
@@ -207,4 +205,14 @@ obj/sigcapd.o: src/sigcapd.c
 obj/tui-menu.o: src/tui-menu.c
 	@echo "[CC] $< -> $@"
 #	${CC} $(filter-out -Werror,${CFLAGS}) -o $@ -c $<
-	@${CC} ${CFLAGS} -o $@ -c $< -Wno-int-conversion
+	@${CC} ${CFLAGS} -o $@ -c $< -Wno-int-conversion -Wno-error=int-conversion -Wno-missing-braces
+
+############3
+help:
+	@echo "MAKE targets:"
+	@echo ""
+	@echo "all | world\t\t\tBuild everything (try -j$NUMCPU!)"
+	@echo "clean\t\t\t\tClean up the tree before rebuilding"
+	@echo "distclean\t\t\tClean up the tree before releasing/uploading"
+	@echo "install-deps\t\t\tInstall needed libraries (ft8_lib and termbox2)"
+	@echo "install-deps-sudo\t\tInstall needed libraries, using sudo"
