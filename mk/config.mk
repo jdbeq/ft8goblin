@@ -9,16 +9,19 @@ lib_install_path := ${PREFIX}/lib
 
 # required libraries: -l${x} will be expanded later...
 common_libs += yajl ev
-ft8goblin_libs += ncurses termbox2 hamlib m
+ft8goblin_libs += ncurses termbox2 hamlib m curl
 ft8coder_libs += m
 sigcapd_libs += uhd rtlsdr uhd rtlsdr hamlib
 
-#ERROR_FLAGS := -Werror 
+ERROR_FLAGS := -Werror 
 SAN_FLAGS := -fsanitize=address
 WARN_FLAGS := -Wall -pedantic -Wno-unused-variable -Wno-unused-function #-Wno-missing-braces
 OPT_FLAGS := -O2 -ggdb3
-CFLAGS += -std=gnu11 -I./ext/ -I./include/ -I./ext/ft8_lib/
+C_STD := -std=gnu11
+CXX_STD := -std=gnu++17
+CFLAGS += ${C_STD} -I./ext/ -I./include/ -I./ext/ft8_lib/
 CFLAGS += ${SAN_FLAGS} ${WARN_FLAGS} ${ERROR_FLAGS} ${OPT_FLAGS}
+CXXFLAGS := ${CXX_STD} $(filter-out ${C_STD},${CFLAGS})
 LDFLAGS += -L./lib/ $(foreach x,${common_libs},-l${x}) -fsanitize=address
 ft8lib_cflags := -fPIC
 ft8goblin_ldflags := ${LDFLAGS} $(foreach x,${ft8goblin_libs},-l${x})

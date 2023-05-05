@@ -51,7 +51,6 @@ real_bins := $(foreach x,${bins},bin/${x})
 extra_clean += ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs} ${sigcapd_real_objs}
 extra_clean += ${real_bins} ${ft8lib} ${ft8lib_objs}
 
-
 #################
 # Build Targets #
 #################
@@ -59,24 +58,24 @@ qrztest: qrztest2.c
 	gcc -o $@ $< -lxml2 -lcurl -I/usr/include/libxml2
 
 bin/ft8goblin: ${ft8goblin_real_objs}
-	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8goblin_ldflags} ${LDFLAGS}
+	@echo "[Linking] $^ to $@"
+	@${CC} -o $@ $^ ${ft8goblin_ldflags} ${LDFLAGS}
 
 bin/decoderd-ft8: ${ft8decoder_real_objs}
-	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags} ${LDFLAGS}
+	@echo "[Linking] $^ to $@"
+	@${CC} -o $@ $^ ${ft8coder_ldflags} ${LDFLAGS}
 
 bin/encoderd-ft8: ${ft8encoder_real_objs}
-	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${ft8coder_ldflags} ${LDFLAGS}
+	@echo "[Linking] $^ to $@"
+	@${CC} -o $@ $^ ${ft8coder_ldflags} ${LDFLAGS}
 
 bin/sigcapd: ${sigcapd_real_objs}
-	@echo "[LD] $^ -> $@"
-	${CC} -o $@ $^ ${sigcapd_ldflags} ${LDFLAGS}
+	@echo "[Linking] $^ to $@"
+	@${CXX} -o $@ $^ ${sigcapd_ldflags} ${LDFLAGS}
 
-obj/sigcapd.o: src/sigcapd.c
-	@echo "[LD] $^ -> $@"
-	${CC} ${CFLAGS} ${sigcapd_cflags} -o $@ -c $<
+obj/sigcapd.o: src/sigcapd.cc
+	@echo "[CXX] $^ -> $@"
+	@${CXX} ${CXXFLAGS} ${sigcapd_cflags} -o $@ -c $<
 
 ####################################################################
 # ugly hacks to quiet the compiler until we can clean things up... #
@@ -84,7 +83,7 @@ obj/sigcapd.o: src/sigcapd.c
 obj/tui-menu.o: src/tui-menu.c
 	@echo "[CC] $< -> $@"
 #	${CC} $(filter-out -Werror,${CFLAGS}) -o $@ -c $<
-	@${CC} ${CFLAGS} -o $@ -c $< -Wno-int-conversion -Wno-error=int-conversion -Wno-missing-braces
+	@${CC} ${CFLAGS} -o $@ -c $< -Wno-error=int-conversion -Wno-missing-braces
 
 include mk/compile.mk
 include mk/ft8lib.mk
