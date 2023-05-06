@@ -20,7 +20,8 @@ static TextArea *ta_textareas[MAX_TEXTAREAS];
 void ta_redraw(TextArea *ta) {
    // Find the end of the ring buffer
    // Start drawing from the bottom up
-   void *sb = rb_get_most_recent(ta->scrollback);
+   // XXX: Make this work
+//   void *sb = rb_get_most_recent(ta->scrollback);
    for (int i = ta->bottom; i > ta->top; i--) {
       // Draw the current line of the ring buffer
 

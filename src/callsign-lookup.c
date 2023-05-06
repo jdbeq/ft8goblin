@@ -12,9 +12,34 @@
 // We then need to save it to the cache (if it didn't come from there already)
 #include "config.h"
 #include "qrz-xml.h"
+#include "debuglog.h"
 #include <stdbool.h>
 #include <stdint.h>
 
+static bool callsign_use_uls = false, callsign_use_qrz = false, callsign_initialized = false;
+
+void callsign_setup(void) {
+   callsign_initialized = true;
+
+   // Use local ULS database?
+   const char *s = cfg_get_str(cfg, "callsign-lookup/use-uls");
+
+   if (strncasecmp(s, "true", 4) == 0) {
+      callsign_use_uls = true;
+   } else {
+      callsign_use_uls = false;
+   }
+
+   // use QRZ XML API?
+   s = cfg_get_str(cfg, "callsign-lookup/use-qrz");
+
+   if (strncasecmp(s, "true", 4) == 0) {
+      callsign_use_qrz = true;
+   } else {
+      callsign_use_qrz = false;
+   }
+}
+   
 // save a callsign record to the cache
 bool callsign_cache_save(qrz_callsign_t *cp) {
     return false;
@@ -27,6 +52,10 @@ qrz_callsign_t *callsign_cache_find(const char *callsign) {
 qrz_callsign_t *callsign_lookup(const char *callsign) {
     bool from_cache = false;
     void *lp = NULL;		// lookup pointer
+
+    if (!callsign_initialized) {
+       callsign_setup();
+    }
 
     // Look in cache
     qrz_callsign_t *cp = NULL;
