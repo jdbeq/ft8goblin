@@ -4,9 +4,10 @@
  * This code probably isn't very reusable yet. That's being worked on...
  */
 #include "config.h"
+#include "debuglog.h"
 #include "tui.h"
 #include "subproc.h"
-#include "debuglog.h"
+#include "ft8goblin_types.h"
 #include <errno.h>
 #include <termbox2.h>
 extern TextArea *msgbox;
@@ -21,7 +22,28 @@ void ta_redraw(TextArea *ta) {
    // Find the end of the ring buffer
    // Start drawing from the bottom up
    // XXX: Make this work
-//   void *sb = rb_get_most_recent(ta->scrollback);
+   if (ta->scrollback == NULL) {
+      return;
+   }
+   rb_node_t *rbn = ta->scrollback->head;
+   rb_node_t *latest_rn = rbn;
+
+   do {
+      if (rbn == NULL) {
+         break;
+      }
+
+      if (rbn->timestamp.tv_sec > latest_rn->timestamp.tv_sec) {
+         latest_rn = rbn;
+      }
+
+      if (rbn->next == NULL) {
+         break;
+      }
+      rbn = rbn->next;
+   } while (true);
+
+   void *sb = rb_get_most_recent(ta->scrollback);
    for (int i = ta->bottom; i > ta->top; i--) {
       // Draw the current line of the ring buffer
 
@@ -51,8 +73,12 @@ int ta_append(TextArea *ta, const char *buf) {
 
    // set needs_freed to ensure it gets freed automatically...
    rb_add(ta->scrollback, bp, true);
+
+   // XXX: temporarily send TextArea messages to log (yuck!)
+   log_send(mainlog, LOG_DEBUG, "%s", buf);
    return rv;
 }
+
 ///////////////////////////
 // Print to the TextArea //
 ///////////////////////////
@@ -127,6 +153,8 @@ TextArea *ta_init(int scrollback_lines) {
 // redraw *ALL* textareas
 void ta_redraw_all(void) {
    for (int i = 0; i < MAX_TEXTAREAS; i++) {
+      if (ta_textareas[i] == NULL)
+         continue;
       ta_redraw(ta_textareas[i]);
    }
 }
@@ -134,6 +162,8 @@ void ta_redraw_all(void) {
 // send resize all textareas
 void ta_resize_all(void) {
    for (int i = 0; i < MAX_TEXTAREAS; i++) {
+      if (ta_textareas[i] == NULL)
+         continue;
       ta_resize(ta_textareas[i]);
    }
 }

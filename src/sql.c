@@ -2,7 +2,21 @@
  * Utility functions to make working with SQL more pleasant
  */
 #include "config.h"
+#include "ft8goblin_types.h"
 #include "sql.h"
+
+// Include sqlite3 and spatialite extensions as they are our default database for read-only info
+#include <sqlite3.h>
+#include <spatialite.h>
+
+// Include libpq for postgresql
+#if	defined(USE_POSTGRESQL)
+#include <postgresql/libpq-fe.h>
+#endif
+
+// Include mysql support
+#if	defined(USE_MYSQL)
+#endif
 
 typedef struct Database {
    enum {
@@ -11,6 +25,8 @@ typedef struct Database {
       DB_POSTGRES,
       DB_MYSQL
    } db_type;
+
+   // 
 } Database;
 
 Database *sql_open(const char *path) {

@@ -7,6 +7,7 @@
  */
 #include "config.h"
 #include "debuglog.h"
+#include "ft8goblin_types.h"
 #include "hamlib.h"
 #include <stdio.h>
 #include <string.h>

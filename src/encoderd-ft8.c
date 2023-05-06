@@ -1,6 +1,8 @@
+#include "config.h"
+#include "debuglog.h"
+#include "ft8goblin_types.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "config.h"
 
 int dying = 0;
 char *progname = "ft8encoder";

@@ -6,6 +6,7 @@
 #include "watch.h"
 #include "daemon.h"
 #include "qrz-xml.h"
+#include "ft8goblin_types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -88,16 +89,17 @@ static void print_status(void) {
    offset += 10;
 
    // callsign
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyCall:");
-   offset += 8;
+   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[Oper:");
+   offset += 6;
    printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "%s", mycall);
    offset += strlen(mycall);
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
-   offset += 2;
+//   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
+//   offset += 2;
 
    // grid square
-   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyGrid:");
-   offset += 8;
+//   printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "[MyGrid:");
+//   offset += 8;
+   printf_tb(offset++, height - 1, TB_RED|TB_BOLD, 0, "@");
    printf_tb(offset, height - 1, TB_CYAN|TB_BOLD, 0, "%s", gridsquare);
    offset += strlen(gridsquare);
    printf_tb(offset, height - 1, TB_WHITE|TB_BOLD, 0, "] ");
@@ -177,7 +179,7 @@ int main(int argc, char **argv) {
    mycall = cfg_get_str(cfg, "site/mycall");
    gridsquare = cfg_get_str(cfg, "site/gridsquare");
 
-   const char *logpath = dict_get(runtime_cfg, "logpath", "file://ft8goblin.log.txt");
+   const char *logpath = dict_get(runtime_cfg, "logpath", "file://ft8goblin.log");
    if (logpath != NULL) {
       mainlog = log_open(logpath);
    } else {
@@ -195,11 +197,6 @@ int main(int argc, char **argv) {
    // Draw the initial screen
    redraw_screen();
 
-   // Initialize the GNIS place names database
-
-   // Initialize the Callsign lookup system
-   qrz_start_session();
-
    // Load the watchlists
    watchlist_load(cfg_get_str(cfg, "ui/alerts/watchfile"));
 
@@ -208,9 +205,10 @@ int main(int argc, char **argv) {
    // Start supervising subprocesses:
    //	ft8capture (single instance per device)
         // XXX: Walk the tree at cfg:devices
-//        subproc_start()
         // XXX: Walk the tree at cfg:bands
    //	ft8decoder (one per band)
+   // 	callsign-lookupd (one thread)
+//        subproc_start()
 
    // main loop...
    while (!dying) {

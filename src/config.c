@@ -5,6 +5,7 @@
 #include "dict.h"
 #include "util.h"
 #include "debuglog.h"
+#include "ft8goblin_types.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -145,7 +146,10 @@ yajl_val load_config(void) {
       if (bp != NULL) {
          dict_add(runtime_cfg, "logpath", bp);
       } else {
-         dict_add(runtime_cfg, "logpath", "ft8goblin.txt.log");
+         memset(buf, 0, sizeof(buf));
+         snprintf(buf, sizeof(buf), "file://logs/%s.log", progname);
+         dict_add(runtime_cfg, "logpath", buf);
+         fprintf(stderr, "load_config: defaulting logpath to %s\n", buf);
       }
       // find the logpath...
       memset(buf, 0, 4096);
@@ -155,7 +159,8 @@ yajl_val load_config(void) {
       if (bp != NULL) {
          dict_add(runtime_cfg, "loglevel", bp);
       } else {
-         dict_add(runtime_cfg, "loglevel", "notice");
+         dict_add(runtime_cfg, "loglevel", "debug");
+         log_send(mainlog, LOG_DEBUG, "You are seeing DEBUG level output because you have not configured loglevel for this service. Please edit config.json and set logger/%s-loglevel appropriately to reduce the log level for better performance.", progname);
       }
 
       // repeat for pidfile...

@@ -1,5 +1,6 @@
 #include "config.h"
 #include "debuglog.h"
+#include "ft8goblin_types.h"
 #include "util.h"
 #include <limits.h>
 #include <errno.h>
@@ -121,13 +122,19 @@ LogHndl *log_open(const char *path) {
       char buf[PATH_MAX + 1];
       memset(buf, 0, PATH_MAX + 1);
       snprintf(buf, PATH_MAX, "logging/%s-loglevel", progname);
-      int x = LogLevel(cfg_get_str(cfg, buf));
+      const char *p = cfg_get_str(cfg, buf);
+      if (p != NULL) {
+         int x = LogLevel(p);
 
-      if (x > 0) {
-         log_level = x;
+         if (x > 0) {
+            log_level = x;
+         } else {
+            log_level = LOG_NOTICE;
+         }
       } else {
-         log_level = LOG_NOTICE;
+         log_level = LOG_DEBUG;
       }
+      fprintf(stderr, "opening log at %s with log_level %s\n", path, buf);
    }
 
    if (strcasecmp(path, "syslog") == 0) {

@@ -4,10 +4,11 @@
 // XXX: We need to make keymaps a loadable thing, so each menu, pane, etc can select its own keymap
 // XXX: This would make things a lot more pleasant for everyone!
 #include "config.h"
+#include "debuglog.h"
 #include "tui.h"
 #include "util.h"
-#include "debuglog.h"
 #include "subproc.h"
+#include "ft8goblin_types.h"
 #include <ev.h>
 
 static ev_io termbox_watcher, termbox_resize_watcher;

@@ -15,6 +15,7 @@ bin/ft8goblin
 bin/decoderd-*
 bin/encoderd-*
 bin/sigcapd
+bin/callsign-lookupd
 
 # These might contain sensitive user data...
 etc/watchlist.txt

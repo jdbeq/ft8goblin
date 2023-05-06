@@ -1,7 +1,7 @@
 /*
  * Support for looking up callsigns using FCC ULS (local) or QRZ XML API (paid)
  *
- * XXX: Add caching support for online lookups, so they can be limited to once per day.
+ * Here we lookup callsigns using FCC ULS and QRZ XML API to fill our cache
  */
 
 // XXX: Here we need to try looking things up in the following order:
@@ -13,12 +13,25 @@
 #include "config.h"
 #include "qrz-xml.h"
 #include "debuglog.h"
+#include "ft8goblin_types.h"
+#include "gnis-lookup.h"
+#include "fcc-db.h"
+#include "qrz-xml.h"
 #include <stdbool.h>
 #include <stdint.h>
-
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <errno.h>
 static bool callsign_use_uls = false, callsign_use_qrz = false, callsign_initialized = false;
+static bool callsign_qrz_active = false;
 
-void callsign_setup(void) {
+// common shared things for our library
+const char *progname = "callsign-lookupd";
+int dying = 0;
+
+// Load the configuration (cfg_get_str(...)) into *our* configuration locals
+static void callsign_setup(void) {
    callsign_initialized = true;
 
    // Use local ULS database?
@@ -75,4 +88,45 @@ qrz_callsign_t *callsign_lookup(const char *callsign) {
     }
 
     return NULL;
+}
+
+static void exit_fix_config(void) {
+   printf("Please edit your config.json and try again!\n");
+   exit(255);
+}
+
+int main(int argc, char **argv) {
+   bool res = false;
+
+   // This can't work without a valid configuration...
+   if (!(cfg = load_config()))
+      exit_fix_config();
+
+   const char *logpath = dict_get(runtime_cfg, "logpath", "file://logs/callsign-lookupd.log");
+
+   if (logpath != NULL) {
+      mainlog = log_open(logpath);
+   } else {
+      fprintf(stderr, "logpath not found, defaulting to stderr!\n");
+      mainlog = log_open("stderr");
+   }
+   log_send(mainlog, LOG_NOTICE, "%s starting up!", progname);
+
+   callsign_setup();
+
+   if (callsign_use_qrz) {
+      res = qrz_start_session();
+      if (res == false) {
+         log_send(mainlog, LOG_CRIT, "Failed logging into QRZ! :(");
+         exit(EACCES);
+      }
+
+      callsign_qrz_active = true;
+   }
+   printf("200 OK %s %s ready to answer requests. QRZ: %s, ULS: %s, GNIS: %s\n", progname, VERSION, (callsign_qrz_active ? "On" : "Off"), (callsign_use_uls ? "On" : "Off"), (use_gnis ? "On" : "Off"));
+
+   while(1) {
+      sleep(1);
+   }
+   return 0;
 }

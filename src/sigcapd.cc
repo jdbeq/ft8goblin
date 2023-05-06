@@ -1,4 +1,5 @@
 #include "config.h"
+#include "ft8goblin_types.h"
 
 int dying = 0;
 const char *progname = "sigcapd";

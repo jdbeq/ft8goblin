@@ -5,7 +5,10 @@
  *
  * Hopefully I'll get around to cleaning up the scripts for that and including them soon!
  */
+#include "config.h"
 #include "sql.h"
+#include "ft8goblin_types.h"
+
 /* In the PUBACC_EN table we have the following fields:
  * record_type
  * unique_system_identifier

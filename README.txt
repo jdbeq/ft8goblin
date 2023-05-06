@@ -22,5 +22,6 @@ In theory, the client will keep the ft8 decoders/etc running, check the logs
 
 
 If you install (make install), you can avoid the ./startup script and call ft8goblin directly.
+It sets up library pathes, etc so that libraries in lib/ will be used by the programs.
 
 For now installing isn't fully supported, please report any bugs you find with it!

@@ -1,6 +1,6 @@
 VERSION = 20230505.01
 all: world
-bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd
+bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd callsign-lookupd
 
 include mk/config.mk
 
@@ -12,6 +12,7 @@ common_objs += ipc.o
 common_objs += memory.o
 common_objs += ringbuffer.o
 common_objs += util.o
+common_objs += maidenhead.o	# maidenhead coordinate tools
 tui_objs += tui.o tui-input.o tui-menu.o tui-textarea.o
 
 ft8goblin_objs += sql.o		# sqlite3 / postgis wrapper
@@ -19,12 +20,8 @@ ft8goblin_objs += ${tui_objs} 	# text user interface
 ft8goblin_objs += fcc-db.o	# FCC ULS database
 ft8goblin_objs += ft8goblin.o	# main TUI program
 ft8goblin_objs += hamlib.o	# hamlib (rigctld) interface
-ft8goblin_objs += gnis-lookup.o	# place names database
-ft8goblin_objs += maidenhead.o	# maidenhead coordinates tools
 ft8goblin_objs += subproc.o	# subprocess management
 ft8goblin_objs += watch.o	# watch lists
-ft8goblin_objs += callsign-lookup.o
-ft8goblin_objs += qrz-xml.o	# QRZ XML API callsign lookups (paid)
 ft8coder_objs += ft8lib.o	# interface to the FT8 library
 ft8decoder_objs += decoderd-ft8.o ${ft8coder_objs}
 ft8encoder_objs += encoderd-ft8.o ${ft8coder_objs}
@@ -32,6 +29,10 @@ sigcapd_objs += sigcapd.o
 sigcapd_objs += uhd.o
 sigcapd_objs += hamlib.o
 sigcapd_objs += alsa.o		# ALSA Linux Audio
+
+callsign_lookupd_objs += callsign-lookupd.o
+callsign_lookupd_objs += gnis-lookup.o	# place names database
+callsign_lookupd_objs += qrz-xml.o	# QRZ XML API callsign lookups (paid)
 
 ifeq (${PULSEAUDIO}, y)
 sigcapd_objs += pulse.o		# pulseaudio
@@ -48,6 +49,8 @@ ft8goblin_real_objs := $(foreach x,${ft8goblin_objs} ${common_objs},obj/${x})
 ft8decoder_real_objs := $(foreach x,${ft8decoder_objs} ${common_objs},obj/${x})
 ft8encoder_real_objs := $(foreach x,${ft8encoder_objs} ${common_objs},obj/${x})
 sigcapd_real_objs := $(foreach x,${sigcapd_objs} ${common_objs},obj/${x})
+callsign_lookupd_real_objs := $(foreach x,${callsign_lookupd_objs} ${common_objs},obj/${x})
+
 real_bins := $(foreach x,${bins},bin/${x})
 extra_clean += ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs} ${sigcapd_real_objs}
 extra_clean += ${real_bins} ${ft8lib} ${ft8lib_objs}
@@ -69,6 +72,10 @@ bin/decoderd-ft8: ${ft8decoder_real_objs}
 bin/encoderd-ft8: ${ft8encoder_real_objs}
 	@echo "[Linking] $^ to $@"
 	@${CC} -o $@ $^ ${ft8coder_ldflags} ${LDFLAGS}
+
+bin/callsign-lookupd: ${callsign_lookupd_real_objs}
+	@echo "[Linking] $^ to $@"
+	@${CC} -o $@ $^ ${callsign_lookupd_ldflags} ${LDFLAGS}
 
 bin/sigcapd: ${sigcapd_real_objs}
 	@echo "[Linking] $^ to $@"

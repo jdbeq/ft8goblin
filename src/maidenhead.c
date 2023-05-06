@@ -3,3 +3,4 @@
  */
 #include "config.h"
 #include "maidenhead.h"
+#include "ft8goblin_types.h"

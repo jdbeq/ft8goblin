@@ -1,8 +1,9 @@
 #define	_daemon_cpp
 #include "config.h"
-#include "daemon.h"
 #include "debuglog.h"
+#include "daemon.h"
 #include "dict.h"
+#include "ft8goblin_types.h"
 #include <signal.h>
 #include <errno.h>
 #include <stdbool.h>

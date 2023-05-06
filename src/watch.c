@@ -1,12 +1,13 @@
 #include "config.h"
+#include "debuglog.h"
+#include "watch.h"
+#include "ft8goblin_types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <regex.h>
-#include "watch.h"
-#include "debuglog.h"
 
 // Destroy the watch pointer w.
 // After this function returns ESUCCESS (0), all pointers

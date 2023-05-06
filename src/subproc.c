@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <termbox2.h>
+#include "ft8goblin_types.h"
 #include "subproc.h"
 #include "tui.h"
 #include "debuglog.h"
@@ -149,6 +150,10 @@ int subproc_killall(int signum) {
 
    int i = 0;
    for (i = 0; i < max_subprocess; i++) {
+      if (children[i] == NULL) {
+         continue;
+      }
+
       ta_printf(msgbox, "$YELLOW$sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
       log_send(mainlog, LOG_NOTICE, "sending %s (%d) to child process %s <%d>...", signame, signum, children[i]->name, children[i]->pid);
       tb_present();
@@ -189,7 +194,10 @@ int subproc_killall(int signum) {
    }
 
    // delete the data structure
-   subproc_delete(i);
+   if (children[i] != NULL) {
+      subproc_delete(i);
+   }
+
    // return > 0, if we sent any kill signals
    return rv;
 }

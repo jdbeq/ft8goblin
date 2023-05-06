@@ -1,7 +1,8 @@
 #include "config.h"
+#include "debuglog.h"
 #include "util.h"
 #include "tui.h"
-#include "debuglog.h"
+#include "ft8goblin_types.h"
 #include <errno.h>
 #include <termbox2.h>
 

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include "config.h"
+#include "ft8goblin_types.h"
 #include "ft8_lib/ft8/unpack.h"
 #include "ft8_lib/ft8/ldpc.h"
 #include "ft8_lib/ft8/decode.h"

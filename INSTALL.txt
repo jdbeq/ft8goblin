@@ -2,12 +2,16 @@ PREREQS
 -------
 You will need the following packages installed on the host:
 	libev-dev libyajl-dev gnuradio libuhd librtlsdr-dev libxml2-dev
-	libsqlite3-mod-spatialite librasterlite2-dev libspatialite-dev spatialite-bin 
-	libjson-dev libmxml-dev
+	libsqlite3-mod-spatialite librasterlite2-dev libspatialite-dev
+	spatialite-bin libmxml-dev
 
 If you want to use the perl scripts in scripts, you'll probably want these too:
-	libdbi-perl libxml-simple-perl libdbd-sqlite3-perl libdbd-pg-perl libdbd-mysql-perl 
-	libterm-readline-perl-perl liblog-log4perl-perl
+	libdbi-perl libxml-simple-perl libdbd-sqlite3-perl libdbd-pg-perl
+	libdbd-mysql-perl libterm-readline-perl-perl liblog-log4perl-perl
+
+If you'd like to use postgresql:
+	libpq-dev postgresql-doc postgresql-postgis postgresql-postgis-scripts
+	postgresql-pgrouting postgresql-pgrouting-scripts postgis
 
 These are the devuan/debian names for them, your distro may vary.
 

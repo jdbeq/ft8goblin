@@ -30,6 +30,7 @@ extern "C" {
       uint64_t	count;		// how many lookups have been done today
       time_t	sub_expiration;	// when does my subscription end?
       time_t	last_rx;	// timestamp of last valid reply
+      char	my_callsign[MAX_CALLSIGN]; // my callsign
       char		*last_msg;	// pointer to last informational message (must be free()d and NULLed!)
       char		*last_error;	// point to last error message (must be freed() and NULLed!)
    } qrz_session_t;
@@ -77,7 +78,7 @@ extern "C" {
    } qrz_callsign_t;
 
    extern char *http_post(const char *url, const char *postdata);
-   extern qrz_session_t *qrz_start_session(void);
+   extern bool qrz_start_session(void);
 #ifdef __cplusplus
 };
 #endif

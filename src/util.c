@@ -1,6 +1,7 @@
 #include "config.h"
-#include "util.h"
 #include "debuglog.h"
+#include "util.h"
+#include "ft8goblin_types.h"
 
 // toggle an intbool (<= 0 is off, >= 1 is on)
 void toggle(int *v) {

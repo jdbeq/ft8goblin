@@ -4,6 +4,8 @@
  * This is done via named pipes, to keep things simple.
  */
 
+#include "config.h"
+#include "ft8goblin_types.h"
 #include <sys/types.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -11,7 +13,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
-#include "config.h"
 
 FILE *open_ipc_pipe(const char *path, int rw) {
     FILE *fp = NULL;

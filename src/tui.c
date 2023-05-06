@@ -10,9 +10,10 @@
  *
  */
 #include "config.h"
+#include "debuglog.h"
 #include "tui.h"
 #include "subproc.h"
-#include "debuglog.h"
+#include "ft8goblin_types.h"
 #include <errno.h>
 #include <regex.h>
 #include <termbox2.h>

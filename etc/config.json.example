@@ -7,15 +7,20 @@
       "mode": "0660"
    },
    "logging": {
+      "callsign-lookupd-logpath": "file://logs/callsign-lookupd.log",
+      "callsign-lookupd-loglevel": "debug",
+      "callsign-lookupd-pidfile": "file://run/callsign-lookupd.pid",
       "decoderd-ft8-loglevel": "notice",
       "decoderd-ft8-logpath": "file://logs/decoderd-ft8.%b.log",
+      "decoderd-ft8-pidfile": "file://run/encoderd-ft8.%b.pid",
       "encoderd-ft8-loglevel": "notice",
       "encoderd-ft8-logpath": "file://logs/encoderd-ft8.%b.log",
+      "encoderd-ft8-pidfile": "file://run/encoderd-ft8.%b.pid",
       "sigcapd-loglevel": "warning",
       "sigcapd-logpath": "file://logs/sigcapd.log",
+      "sigcapd-pidfile": "file://run/sigcapd.%b.pid",
       "ft8goblin-loglevel": "debug",
-      "ft8goblin-logpath": "file://logs/ft8goblin.log",
-      "ft8goblin-pidfile": "logs/ft8goblin.pid"
+      "ft8goblin-logpath": "file://logs/ft8goblin.log"
    },
    "site": {
       "mycall": "N0CALL",
@@ -39,6 +44,7 @@
       "qrz-api-key": "xxxx",
       "qrz-username": "xxxx",
       "qrz-password": "xxxx",
+      "cache-db": "etc/callsign-cache.db",
       "cache-online-lookups": "true",
       "cache-expiry": "3d",
       "cache-keep-stale-if-offline": "true"
@@ -49,9 +55,7 @@
    },
    "supervisor": {
       "max-crashes": 5,
-      "max-crash-time": 60,
-      "supervise-decoders": "true",
-      "supervise-sigcapd": "true"
+      "max-crash-time": 60
    },
    "ui": {
       "color": "true",
@@ -63,7 +67,7 @@
          "alert-new-grid": "false",
          "alert-watch-calls": "popup",
          "watchfile": "etc/watchlist.txt",
-         "watchfile-inotify": "true",
+         "watchfile-inotify": "false",
          "watchfile-timed-reload": "false"
       }
    },
