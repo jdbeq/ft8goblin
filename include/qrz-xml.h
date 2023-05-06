@@ -1,6 +1,8 @@
 #if	!defined(_qrz_xml_h)
 #define _qrz_xml_h
 
+#include <mxml.h>
+
 #define	MAX_CALLSIGN		32
 #define	MAX_QRZ_ALIASES		10
 #define	MAX_FIRSTNAME		64
@@ -75,7 +77,7 @@ extern "C" {
    } qrz_callsign_t;
 
    extern char *http_post(const char *url, const char *postdata);
-   extern int qrz_start_session(void);
+   extern qrz_session_t *qrz_start_session(void);
 #ifdef __cplusplus
 };
 #endif

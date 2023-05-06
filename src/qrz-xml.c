@@ -3,7 +3,10 @@
  *
  * This is only useful for paid QRZ members.
  *
- * XXX: We should cache results in sqlite so lookups only happen once a day.
+ * We cache results into etc/qrz-cache.db for cfg:callsign-lookup/cache-expiry (3 days by default)
+ *
+ * Reference: https://www.qrz.com/XML/current_spec.html
+ * Current Version: 1.34
  */
 #include "config.h"
 #include "qrz-xml.h"
@@ -31,8 +34,8 @@ static size_t qrz_http_post_cb(void *ptr, size_t size, size_t nmemb, qrz_string_
   s->ptr = realloc(s->ptr, new_len+1);
 
   if (s->ptr == NULL) {
-    fprintf(stderr, "realloc() failed\n");
-    exit(EXIT_FAILURE);
+    fprintf(stderr, "qrz_http_post_cb: Out of memory!\n");
+    exit(ENOMEM);
   }
 
   memcpy(s->ptr + s->len, ptr, size * nmemb);
@@ -43,6 +46,7 @@ static size_t qrz_http_post_cb(void *ptr, size_t size, size_t nmemb, qrz_string_
   return size * nmemb;
 }
 
+// We should probably move to the curl_multi_* api to avoid blocking, or maybe spawn this whole mess into a thread
 char *http_post(const char *url, const char *postdata) {
    char *r = NULL;
    CURL *curl;
@@ -78,6 +82,10 @@ char *http_post(const char *url, const char *postdata) {
    return r;
 }
 
+static mxml_type_t *qrz_start_sesion_cb(mxml_node_t *tree) {
+   return NULL;
+}
+
 //int qrz_start_session(const char *user, const char *pass) {
 qrz_session_t *qrz_start_session(void) {
    qrz_session_t *q;
@@ -107,7 +115,7 @@ qrz_session_t *qrz_start_session(void) {
    post_reply = http_post(buf, NULL);
    if (post_reply == NULL) {
       // An error happened
-      log_send(mainlog, LOG_CRIT, "qrz_start_session got empty reply from %s, failing lookup!", qrz_url);
+      log_send(mainlog, LOG_CRIT, "qrz_start_session got empty reply from %s, failing lookup!", qrz_api_url);
       free(q);
       return NULL;
    } else { 
@@ -122,6 +130,14 @@ qrz_session_t *qrz_start_session(void) {
           </Session>
         </QRZDatabase>
        */
+       char *key = NULL, *message = NULL, *error = NULL;
+       uint64_t count = 0;
+       time_t sub_exp = -1, qrz_gmtime = -1;
+       mxml_node_t *xml = NULL, *top = NULL;
+
+       xml = mxmlLoadString(top, post_reply, qrz_start_session_cb);
+
+       // XXX: Parse the message here
        if (key) {
           q->key = strdup(key);
        } else {
@@ -130,7 +146,7 @@ qrz_session_t *qrz_start_session(void) {
        }
 
        q->count = count;
-       q->sub_expiraton = sub_exp;
+       q->sub_expiration = sub_exp;
        q->last_rx = qrz_gmtime;
 
        if (message) {

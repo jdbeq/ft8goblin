@@ -9,7 +9,7 @@ lib_install_path := ${PREFIX}/lib
 
 # required libraries: -l${x} will be expanded later...
 common_libs += yajl ev
-ft8goblin_libs += ncurses termbox2 hamlib m curl
+ft8goblin_libs += ncurses termbox2 hamlib m curl mxml
 ft8coder_libs += m
 sigcapd_libs += uhd rtlsdr uhd rtlsdr hamlib
 
