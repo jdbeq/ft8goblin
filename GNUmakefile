@@ -1,4 +1,3 @@
-
 VERSION = 20230505.01
 all: world
 bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd
@@ -24,6 +23,7 @@ ft8goblin_objs += gnis-lookup.o	# place names database
 ft8goblin_objs += maidenhead.o	# maidenhead coordinates tools
 ft8goblin_objs += subproc.o	# subprocess management
 ft8goblin_objs += watch.o	# watch lists
+ft8goblin_objs += callsign-lookup.o
 ft8goblin_objs += qrz-xml.o	# QRZ XML API callsign lookups (paid)
 ft8coder_objs += ft8lib.o	# interface to the FT8 library
 ft8decoder_objs += decoderd-ft8.o ${ft8coder_objs}

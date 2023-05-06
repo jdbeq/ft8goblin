@@ -82,7 +82,7 @@ char *http_post(const char *url, const char *postdata) {
    return r;
 }
 
-static mxml_type_t *qrz_start_sesion_cb(mxml_node_t *tree) {
+static mxml_type_t *qrz_start_session_cb(mxml_node_t *tree) {
    return NULL;
 }
 
@@ -135,7 +135,7 @@ qrz_session_t *qrz_start_session(void) {
        time_t sub_exp = -1, qrz_gmtime = -1;
        mxml_node_t *xml = NULL, *top = NULL;
 
-       xml = mxmlLoadString(top, post_reply, qrz_start_session_cb);
+//       xml = mxmlLoadString(top, post_reply, qrz_start_session_cb);
 
        // XXX: Parse the message here
        if (key) {

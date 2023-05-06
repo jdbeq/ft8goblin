@@ -83,7 +83,7 @@ int rb_add(rb_buffer_t *buffer, void *data, int needs_freed) {
     return 0;
 }
 
-void *rb_get_most_recent(rb_buffer_t *buffer) {
+rb_node_t *rb_get_most_recent(rb_buffer_t *buffer) {
     if (buffer->current_size == 0) {
         printf("Ring buffer is empty.\n");
         return NULL;
@@ -100,10 +100,10 @@ void *rb_get_most_recent(rb_buffer_t *buffer) {
         }
         current = current->next;
     }
-    return latest_node->data;
+    return latest_node;
 }
 
-void *rb_get_range(rb_buffer_t *buffer, int start, int count) {
+void **rb_get_range(rb_buffer_t *buffer, int start, int count) {
     if (buffer->current_size == 0) {
         printf("Ring buffer is empty.\n");
         return NULL;
