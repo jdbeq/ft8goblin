@@ -134,7 +134,7 @@ LogHndl *log_open(const char *path) {
       } else {
          log_level = LOG_DEBUG;
       }
-      fprintf(stderr, "opening log at %s with log_level %s\n", path, buf);
+//      fprintf(stderr, "opening log at %s with log_level %s\n", path, p);
    }
 
    if (strcasecmp(path, "syslog") == 0) {

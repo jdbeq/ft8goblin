@@ -1,8 +1,6 @@
 #if	!defined(_qrz_xml_h)
 #define _qrz_xml_h
 
-#include <mxml.h>
-
 #define	MAX_CALLSIGN		32
 #define	MAX_QRZ_ALIASES		10
 #define	MAX_FIRSTNAME		64
@@ -26,8 +24,8 @@ extern "C" {
    } qrz_string_t;
 
    typedef struct qrz_session {
-      char 	*key;		// Session key
-      uint64_t	count;		// how many lookups have been done today
+      char 	key[33];	// Session key
+      int	count;		// how many lookups have been done today
       time_t	sub_expiration;	// when does my subscription end?
       time_t	last_rx;	// timestamp of last valid reply
       char	my_callsign[MAX_CALLSIGN]; // my callsign
@@ -79,6 +77,7 @@ extern "C" {
 
    extern char *http_post(const char *url, const char *postdata);
    extern bool qrz_start_session(void);
+   extern bool qrz_lookup_callsign(const char *callsign);
 #ifdef __cplusplus
 };
 #endif

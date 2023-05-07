@@ -1,5 +1,8 @@
 #!/bin/bash
 # A simple wrapper to fixup path issues and start ft8goblin without installing...
+#
+# Pass -g if you want to open things in gdb
+#
 
 # Set a reasonable default for even ten year old machines...
 [ -z "${NPROC}" ] && NPROC=8
@@ -14,4 +17,13 @@ fi
 export LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH}
 
 # Start ft8goblin
-./bin/ft8goblin
+if [ "$1" == "-g" ]; then
+   use_gdb=y
+fi
+
+if [ "${use_gdb}" == "y" ]; then
+   gdb ./bin/ft8goblin
+else
+   ./bin/ft8goblin
+fi
+

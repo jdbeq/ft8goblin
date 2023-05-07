@@ -64,7 +64,7 @@ qrz_callsign_t *callsign_cache_find(const char *callsign) {
 
 qrz_callsign_t *callsign_lookup(const char *callsign) {
     bool from_cache = false;
-    void *lp = NULL;		// lookup pointer
+    qrz_callsign_t *qr = NULL;
 
     if (!callsign_initialized) {
        callsign_setup();
@@ -80,6 +80,7 @@ qrz_callsign_t *callsign_lookup(const char *callsign) {
     // XXX: nope, check FCC ULS
 
     // XXX: nope, check QRZ XML API
+    qrz_lookup_callsign(callsign);
 
     // only save it in cache if it did not come from there already
     if (!from_cache) {
@@ -116,6 +117,7 @@ int main(int argc, char **argv) {
 
    if (callsign_use_qrz) {
       res = qrz_start_session();
+
       if (res == false) {
          log_send(mainlog, LOG_CRIT, "Failed logging into QRZ! :(");
          exit(EACCES);
@@ -124,9 +126,10 @@ int main(int argc, char **argv) {
       callsign_qrz_active = true;
    }
    printf("200 OK %s %s ready to answer requests. QRZ: %s, ULS: %s, GNIS: %s\n", progname, VERSION, (callsign_qrz_active ? "On" : "Off"), (callsign_use_uls ? "On" : "Off"), (use_gnis ? "On" : "Off"));
-
+   callsign_lookup("W1AW");
    while(1) {
       sleep(1);
    }
+
    return 0;
 }

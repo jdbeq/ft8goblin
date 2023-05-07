@@ -1,4 +1,4 @@
-VERSION = 20230505.01
+VERSION = 20230506.02
 all: world
 bins := ft8goblin decoderd-ft8 encoderd-ft8 sigcapd callsign-lookupd
 
@@ -33,6 +33,7 @@ sigcapd_objs += alsa.o		# ALSA Linux Audio
 callsign_lookupd_objs += callsign-lookupd.o
 callsign_lookupd_objs += gnis-lookup.o	# place names database
 callsign_lookupd_objs += qrz-xml.o	# QRZ XML API callsign lookups (paid)
+callsign_lookupd_objs += sql.o
 
 ifeq (${PULSEAUDIO}, y)
 sigcapd_objs += pulse.o		# pulseaudio
