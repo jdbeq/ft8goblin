@@ -53,7 +53,7 @@ sigcapd_real_objs := $(foreach x,${sigcapd_objs} ${common_objs},obj/${x})
 callsign_lookupd_real_objs := $(foreach x,${callsign_lookupd_objs} ${common_objs},obj/${x})
 
 real_bins := $(foreach x,${bins},bin/${x})
-extra_clean += ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs} ${sigcapd_real_objs}
+extra_clean += ${ft8goblin_real_objs} ${ft8decoder_real_objs} ${ft8encoder_real_objs} ${sigcapd_real_objs} ${callsign_lookupd_real_objs}
 extra_clean += ${real_bins} ${ft8lib} ${ft8lib_objs}
 
 #################
